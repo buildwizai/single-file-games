@@ -8,7 +8,8 @@
     "category": "Other",
     "model": "GROK 3",
     "image": "/images/game-placeholder.png",
-    "dateAdded": "2025-03-05"
+    "dateAdded": "2025-03-05",
+    "publicPath": "/games/sky-fight/grok3.html"
   },
   {
     "id": "sky-fight-plus-grok3",
@@ -19,7 +20,8 @@
     "category": "Arcade",
     "model": "GROK 3",
     "image": "/images/game-placeholder.png",
-    "dateAdded": "2025-03-05"
+    "dateAdded": "2025-03-05",
+    "publicPath": "/games/sky-fight-plus/grok3.html"
   },
   {
     "id": "snake-grok3",
@@ -30,6 +32,7 @@
     "category": "Other",
     "model": "GROK 3",
     "image": "/images/game-placeholder.png",
-    "dateAdded": "2025-03-05"
+    "dateAdded": "2025-03-05",
+    "publicPath": "/games/snake/grok3.html"
   }
 ]

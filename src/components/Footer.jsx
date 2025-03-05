@@ -8,6 +8,9 @@ const Footer = () => {
           MADE WITH <i className="fas fa-heart text-red-500"></i> BY THE AI COMMUNITY
         </p>
       </div>
+      <div className="license text-center mt-4 text-gray-400 text-sm">
+        Licensed under the MIT License
+      </div>
     </footer>
   );
 };

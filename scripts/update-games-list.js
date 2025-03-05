@@ -17,10 +17,12 @@ const __dirname = path.dirname(__filename);
 const GAMES_DIR = path.join(__dirname, '..', 'games');
 const OUTPUT_FILE = path.join(__dirname, '..', 'src', 'data', 'games.json');
 const DEFAULT_GAME_IMAGE = '/images/game-placeholder.png';
+const PUBLIC_GAMES_DIR = path.join(__dirname, '..', 'public', 'games');
 
 console.log('=== Games List Update Script ===');
 console.log(`Games directory: ${GAMES_DIR}`);
 console.log(`Output file: ${OUTPUT_FILE}`);
+console.log(`Public games directory: ${PUBLIC_GAMES_DIR}`);
 
 // Load existing games from the JSON file if it exists
 let existingGames = [];
@@ -75,14 +77,6 @@ function extractDescription(htmlContent) {
   return firstP || 'A fun browser game created with GPT-4';
 }
 
-// Helper to generate a slug from title
-function generateSlug(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-');
-}
-
 // Helper to determine category from directory or fallback to a default
 function determineCategory(dirName) {
   const normalizedDirName = dirName.toLowerCase();
@@ -116,10 +110,26 @@ function createGameId(dirName, fileName) {
   return `${dirSlug}-${baseName}`;
 }
 
+// Helper to ensure directory exists
+function ensureDirectoryExists(directory) {
+  if (!fs.existsSync(directory)) {
+    console.log(`Creating directory: ${directory}`);
+    fs.mkdirSync(directory, { recursive: true });
+  }
+}
+
+// Helper to copy file with directory creation
+function copyFile(sourcePath, destPath) {
+  const destDir = path.dirname(destPath);
+  ensureDirectoryExists(destDir);
+  fs.copyFileSync(sourcePath, destPath);
+}
+
 // Main function to scan games and generate data
 async function updateGamesList() {
   console.log('\n=== Starting Games Directory Scan ===');
   const gameData = [];
+  let copiedFilesCount = 0;
 
   try {
     // Get all directories within the games folder
@@ -141,6 +151,10 @@ async function updateGamesList() {
         .filter(file => file.endsWith('.html'));
 
       console.log(`\nProcessing ${gameDir}: Found ${gameFiles.length} HTML files`);
+
+      // Ensure the public game directory exists
+      const publicGameDir = path.join(PUBLIC_GAMES_DIR, gameDir);
+      ensureDirectoryExists(publicGameDir);
 
       for (const gameFile of gameFiles) {
         const filePath = path.join(gamePath, gameFile);
@@ -180,8 +194,36 @@ async function updateGamesList() {
           screenshot = `/${path.join('games', gameDir, path.basename(possibleScreenshots[0]))}`.replace(/\\/g, '/');
           console.log(`  Found screenshot: ${screenshot}`);
           totalScreenshotsFound++;
+
+          // Copy the screenshot to public directory
+          const destScreenshotPath = path.join(PUBLIC_GAMES_DIR, gameDir, path.basename(possibleScreenshots[0]));
+          copyFile(possibleScreenshots[0], destScreenshotPath);
+          console.log(`  Copied screenshot to public directory: ${destScreenshotPath}`);
+          copiedFilesCount++;
         } else {
           console.log(`  No screenshot found, using default image`);
+        }
+
+        // Copy the game HTML file to the public directory
+        const destHtmlPath = path.join(PUBLIC_GAMES_DIR, gameDir, gameFile);
+        copyFile(filePath, destHtmlPath);
+        console.log(`  Copied game HTML to public directory: ${destHtmlPath}`);
+        copiedFilesCount++;
+
+        // Check if there are any additional assets to copy (CSS, JS, images, etc.)
+        const gameFileDir = path.dirname(filePath);
+        const additionalAssets = fs.readdirSync(gameFileDir)
+          .filter(file => !file.endsWith('.html') && !file.startsWith('.'));
+
+        for (const asset of additionalAssets) {
+          const assetPath = path.join(gameFileDir, asset);
+          // Skip directories for now
+          if (fs.lstatSync(assetPath).isDirectory()) continue;
+
+          const destAssetPath = path.join(PUBLIC_GAMES_DIR, gameDir, asset);
+          copyFile(assetPath, destAssetPath);
+          console.log(`  Copied asset to public directory: ${destAssetPath}`);
+          copiedFilesCount++;
         }
 
         // Check if this game already exists in our data to maintain any custom fields
@@ -197,6 +239,7 @@ async function updateGamesList() {
           title,
           description,
           path: `/${relativePath}`.replace(/\\/g, '/'), // Fix path format for web usage
+          publicPath: `/games/${gameDir}/${gameFile}`.replace(/\\/g, '/'), // Add public path
           category,
           model,
           image: screenshot,
@@ -216,6 +259,7 @@ async function updateGamesList() {
     console.log(`Total games processed: ${totalGamesProcessed}`);
     console.log(`Games with screenshots: ${totalScreenshotsFound}`);
     console.log(`Games without screenshots: ${totalGamesProcessed - totalScreenshotsFound}`);
+    console.log(`Total files copied to public directory: ${copiedFilesCount}`);
 
     console.log('\nCategory distribution:');
     Object.entries(categoryCounts).forEach(([category, count]) => {
@@ -257,5 +301,6 @@ updateGamesList().then(() => {
   console.log('=== Update Complete ===');
 }).catch(err => {
   console.error('Fatal error during execution:', err);
+  // eslint-disable-next-line no-undef
   process.exit(1);
 });

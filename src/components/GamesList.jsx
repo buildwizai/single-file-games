@@ -17,8 +17,8 @@ const GamesList = () => {
   return (
     <div className="retro-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {games.map((game) => (
-        <GameCard 
-          key={game.id} 
+        <GameCard
+          key={game.id}
           game={game}
         />
       ))}
