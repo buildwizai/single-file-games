@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-import { useApp } from './context/AppContext'
 import Header from './components/Header'
 import GamesList from './components/GamesList'
 import ContributeSection from './components/ContributeSection'
@@ -9,12 +7,6 @@ import './App.css'
 import ShareButtons from './components/ShareButtons'
 
 function App() {
-  const { actions } = useApp()
-
-  useEffect(() => {
-    actions.fetchGithubStats()
-  }, [actions])
-
   const shareUrl = window.location.href;
   const shareTitle = "BuildWiz AI - Single File Games";
   const githubRepoUrl = "https://github.com/buildwizai/single-file-games"; // Change to your repo URL

@@ -1,10 +1,8 @@
 import React from 'react';
-import { useApp } from '../context/AppContext';
 import GameCard from './GameCard';
+import games from '../data/games.json';
 
 const GamesList = () => {
-  const { games } = useApp();
-
   if (games.length === 0) {
     return (
       <div className="col-span-full text-center py-12 retro-container retro-text">

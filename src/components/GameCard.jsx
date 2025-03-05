@@ -35,50 +35,33 @@ const getModelStyle = (modelName) => {
   return modelStyles.default;
 };
 
-// Add auto-generated icon function based on game properties
-const getGameIcon = (game) => {
-  // Prefer the icon based on game.model if it exists
-  const modelIcon = getModelStyle(game.model).icon;
-  // If modelIcon is not the default or can be used, return it
-  if (modelIcon && modelIcon !== modelStyles.default.icon) {
-    return modelIcon;
-  }
-  // Otherwise, auto generate icon based on game title keywords
-  const lowerTitle = game.title.toLowerCase();
-  if (lowerTitle.includes('space')) return 'fa-space-shuttle';
-  if (lowerTitle.includes('puzzle')) return 'fa-puzzle-piece';
-  if (lowerTitle.includes('racing')) return 'fa-tachometer-alt';
-  if (lowerTitle.includes('adventure')) return 'fa-compass';
-  if (lowerTitle.includes('fight') || lowerTitle.includes('war')) return 'fa-fist-raised';
-  return 'fa-gamepad';
-};
-
-const GameCard = ({ game, onPlay }) => {
-  const gameIcon = getGameIcon(game);
+const GameCard = ({ game }) => {
+  const modelStyle = getModelStyle(game.model);
 
   return (
-    <div className="retro-card text-white p-4 flex flex-col">
-      <div>
-        <div className="mb-4 text-center">
-          <i className={`fas ${gameIcon} text-4xl mb-2`}></i>
-          {/* Display model as a tag */}
-          <span className="inline-block bg-gray-800 px-2 py-1 rounded text-xs">
-            {game.model}
-          </span>
-        </div>
-        <div className="mb-4">
-          <h3 className="retro-text text-lg">{game.title}</h3>
-        </div>
+    <div className="game-card flex flex-col p-4 border rounded shadow">
+      <div className="mb-4 text-center">
+        <i className={`fas ${modelStyle.icon} text-4xl mb-2`}></i>
+        {/* Display model as a tag */}
+        <span className="inline-block bg-gray-800 px-2 py-1 rounded text-xs">
+          {game.model}
+        </span>
       </div>
-      <div className="mt-auto">
-        <button
-          onClick={() => onPlay(game)}
-          className="retro-button block w-full text-center text-sm"
-          type="button"
+      <div className="game-details p-4">
+        <h3 className="retro-text text-lg mb-4">{game.title}</h3>
+        {/* Removed description */}
+
+      </div>
+
+      {/* The Play button with mt-auto to push it to the bottom */}
+      <a
+          href={game.publicPath}
+          className="retro-button mt-auto block w-full text-center text-sm mb-4 py-2 px-4 rounded"
+          target="_blank"
+          rel="noreferrer"
         >
           <i className="fas fa-play mr-2"></i> PLAY
-        </button>
-      </div>
+        </a>
     </div>
   );
 };
@@ -87,11 +70,11 @@ GameCard.propTypes = {
   game: PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
+    // description removed
     path: PropTypes.string.isRequired,
     publicPath: PropTypes.string,
     model: PropTypes.string.isRequired,
   }).isRequired,
-  onPlay: PropTypes.func.isRequired,
 };
 
 export default GameCard;
