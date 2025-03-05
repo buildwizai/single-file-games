@@ -1,64 +1,35 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { closePromptModal } from '../redux/slices/uiSlice';
+import React from 'react';
+import { useApp } from '../context/AppContext';
 
 const PromptModal = () => {
-  const dispatch = useDispatch();
-  const { promptModalOpen, promptModalContent, promptModalTitle } = useSelector((state) => state.ui);
-  const [copySuccess, setCopySuccess] = useState(false);
+  const { promptModal, actions } = useApp();
+  const { isOpen, content, title, isLoading } = promptModal;
 
-  const handleClose = () => {
-    dispatch(closePromptModal());
-  };
-
-  const handleCopy = async () => {
-    if (!promptModalContent) return;
-    
-    try {
-      await navigator.clipboard.writeText(promptModalContent);
-      setCopySuccess(true);
-      
-      // Reset after 2 seconds
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
-      alert('Failed to copy to clipboard');
-    }
-  };
-
-  if (!promptModalOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex justify-center items-start pt-16 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl mx-auto p-6 max-w-3xl w-full max-h-[80vh] flex flex-col relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-indigo-700">{promptModalTitle}</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCopy}
-              className={`${
-                copySuccess
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-              } px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors`}
-            >
-              <i className={`fas ${copySuccess ? 'fa-check' : 'fa-copy'}`}></i>
-              <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
-            </button>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-            >
-              &times;
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-800">{title} - Prompt</h3>
+          <button
+            onClick={actions.closePromptModal}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <i className="fas fa-times"></i>
+          </button>
         </div>
-        <div className="overflow-y-auto flex-grow border border-gray-200 rounded-lg">
-          <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto whitespace-pre-wrap h-full text-left">
-            {promptModalContent || 'Loading prompt...'}
-          </pre>
+        
+        <div className="p-4 overflow-y-auto flex-grow">
+          {isLoading ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : (
+            <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded">
+              {content}
+            </pre>
+          )}
         </div>
       </div>
     </div>

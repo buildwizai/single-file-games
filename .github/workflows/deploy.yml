@@ -33,6 +33,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create games directory
+        run: mkdir -p dist/games
+
+      - name: Copy games
+        run: cp -r games/* dist/games/
+
       - name: Build project
         run: npm run build
 

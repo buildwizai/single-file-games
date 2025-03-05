@@ -2,6 +2,44 @@
 
 A showcase of AI-generated, self-contained games written in a single HTML file. This project demonstrates the capabilities of various AI models in generating complete, playable games using different approaches and techniques.
 
+## 🌟 Features
+
+- Collection of single-file HTML games
+- Each game implemented by different AI models (GROK, ChatGPT, Gemini, etc.)
+- Clean, modern UI built with React and Tailwind CSS
+- Real-time GitHub statistics
+- Easy-to-use prompt viewer
+- Mobile-responsive design
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/buildwizai/single-file-games.git
+cd single-file-games
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Build for production:
+```bash
+npm run build
+```
 
 ## 🎯 Project Structure
 

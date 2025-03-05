@@ -78,8 +78,8 @@ There are several ways you can contribute to this project:
 
 2. **Installation**
    ```bash
-   git clone https://github.com/yourusername/buildwizai.git
-   cd buildwizai/single-file-games
+   git clone https://github.com/buildwizai/single-file-games.git
+   cd single-file-games
    npm install
    npm run dev
    ```

@@ -37,7 +37,8 @@ const getModelStyle = (modelName) => {
 
 const GameCard = ({ game, onViewPrompt }) => {
   const modelStyle = getModelStyle(game.model);
-
+  const baseUrl = import.meta.env.BASE_URL;
+  
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg">
       <div className={`h-40 bg-gradient-to-r ${modelStyle.colorClass} flex items-center justify-center text-white`}>
@@ -51,7 +52,7 @@ const GameCard = ({ game, onViewPrompt }) => {
         <p className="text-gray-600 mb-4">{game.description}</p>
         <div className="flex flex-wrap gap-2">
           <a 
-            href={`${game.path}/${game.file}`}
+            href={`${baseUrl}${game.path}/${game.file}`}
             className="inline-flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
             target="_blank"
             rel="noreferrer"

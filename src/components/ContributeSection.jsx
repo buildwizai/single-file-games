@@ -7,7 +7,7 @@ const ContributeSection = () => {
       <p className="text-gray-700 mb-4">Have an idea for a new single-file game? Contribute to the project by submitting a pull request!</p>
       <div className="flex flex-wrap gap-4">
         <a 
-          href="https://github.com/montimage/buildwizai/fork" 
+          href="https://github.com/buildwizai/single-file-games/fork" 
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
@@ -15,7 +15,7 @@ const ContributeSection = () => {
           <i className="fas fa-code-branch"></i> Fork Repository
         </a>
         <a 
-          href="https://github.com/montimage/buildwizai/blob/main/CONTRIBUTING.md" 
+          href="https://github.com/buildwizai/single-file-games/blob/main/CONTRIBUTING.md" 
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-2 bg-white text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-medium"

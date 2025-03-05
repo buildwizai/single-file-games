@@ -12,7 +12,7 @@ const Header = () => {
         {/* Repository links */}
         <div className="mt-6 flex flex-wrap justify-center gap-4">
           <a
-            href="https://github.com/montimage/buildwizai/tree/main/single-file-games"
+            href="https://github.com/buildwizai/single-file-games"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 bg-white text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-medium"
@@ -20,7 +20,7 @@ const Header = () => {
             <i className="fab fa-github"></i> View on GitHub
           </a>
           <a
-            href="https://github.com/montimage/buildwizai/tree/main/single-file-games#readme"
+            href="https://github.com/buildwizai/single-file-games#readme"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 bg-transparent border border-white text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-colors font-medium"
@@ -28,7 +28,7 @@ const Header = () => {
             <i className="fas fa-book"></i> Documentation
           </a>
           <a
-            href="https://github.com/montimage/buildwizai/issues/new"
+            href="https://github.com/buildwizai/single-file-games/issues/new"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 bg-transparent border border-white text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-colors font-medium"
@@ -42,7 +42,7 @@ const Header = () => {
           <p className="text-sm mb-2 opacity-80">Share this collection</p>
           <div className="flex justify-center gap-3">
             <a
-              href="https://twitter.com/intent/tweet?text=Check%20out%20this%20awesome%20collection%20of%20single-file%20HTML%20games!&url=https://github.com/montimage/buildwizai/tree/main/single-file-games"
+              href="https://twitter.com/intent/tweet?text=Check%20out%20this%20awesome%20collection%20of%20single-file%20HTML%20games!&url=https://github.com/buildwizai/single-file-games"
               target="_blank"
               rel="noreferrer"
               className="w-10 h-10 bg-[#1DA1F2] hover:bg-[#0d8ad6] rounded-full flex items-center justify-center transition-colors"
@@ -50,7 +50,7 @@ const Header = () => {
               <i className="fab fa-twitter text-white"></i>
             </a>
             <a
-              href="https://www.facebook.com/sharer/sharer.php?u=https://github.com/montimage/buildwizai/tree/main/single-file-games"
+              href="https://www.facebook.com/sharer/sharer.php?u=https://github.com/buildwizai/single-file-games"
               target="_blank"
               rel="noreferrer"
               className="w-10 h-10 bg-[#1877F2] hover:bg-[#0d65d9] rounded-full flex items-center justify-center transition-colors"
@@ -58,7 +58,7 @@ const Header = () => {
               <i className="fab fa-facebook-f text-white"></i>
             </a>
             <a
-              href="https://www.linkedin.com/shareArticle?mini=true&url=https://github.com/montimage/buildwizai/tree/main/single-file-games&title=Single%20File%20HTML%20Games&summary=An%20awesome%20collection%20of%20games%20created%20with%20a%20single%20HTML%20file"
+              href="https://www.linkedin.com/shareArticle?mini=true&url=https://github.com/buildwizai/single-file-games&title=Single%20File%20HTML%20Games&summary=An%20awesome%20collection%20of%20games%20created%20with%20a%20single%20HTML%20file"
               target="_blank"
               rel="noreferrer"
               className="w-10 h-10 bg-[#0A66C2] hover:bg-[#0952a0] rounded-full flex items-center justify-center transition-colors"

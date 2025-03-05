@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { fetchGamesStart } from './redux/slices/gamesSlice'
-import { fetchStatsStart } from './redux/slices/statsSlice'
+import { useApp } from './context/AppContext'
 import Header from './components/Header'
 import GamesList from './components/GamesList'
 import GitHubStats from './components/GitHubStats'
@@ -11,13 +9,11 @@ import Footer from './components/Footer'
 import './App.css'
 
 function App() {
-  const dispatch = useDispatch()
+  const { actions } = useApp()
 
   useEffect(() => {
-    // Load games and GitHub statistics when app mounts
-    dispatch(fetchGamesStart())
-    dispatch(fetchStatsStart())
-  }, [dispatch])
+    actions.fetchGithubStats()
+  }, [actions])
 
   return (
     <div className="bg-gray-50 text-gray-800 min-h-screen flex flex-col">

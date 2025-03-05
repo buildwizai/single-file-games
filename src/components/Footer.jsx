@@ -7,7 +7,7 @@ const Footer = () => {
         <p>Created with ❤️ for the coding community</p>
         <div className="flex gap-4">
           <a 
-            href="https://github.com/montimage/buildwizai" 
+            href="https://github.com/buildwizai/single-file-games" 
             target="_blank" 
             rel="noreferrer"
             className="text-indigo-300 hover:text-white transition-colors"
@@ -15,7 +15,7 @@ const Footer = () => {
             <i className="fab fa-github"></i> GitHub
           </a>
           <a 
-            href="https://github.com/montimage/buildwizai/stargazers" 
+            href="https://github.com/buildwizai/single-file-games/stargazers" 
             target="_blank" 
             rel="noreferrer"
             className="text-indigo-300 hover:text-white transition-colors"
@@ -23,7 +23,7 @@ const Footer = () => {
             <i className="fas fa-star"></i> Star
           </a>
           <a 
-            href="https://github.com/montimage/buildwizai/network/members" 
+            href="https://github.com/buildwizai/single-file-games/network/members" 
             target="_blank" 
             rel="noreferrer"
             className="text-indigo-300 hover:text-white transition-colors"
