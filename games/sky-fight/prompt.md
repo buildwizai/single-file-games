@@ -1,19 +1,54 @@
-Create a single HTML file for a 'Sky Fight 3D' game using HTML5 canvas with the following specifications:
+Create a complete "Sky Fight 2D Retro" game in a single `.html` file that includes HTML, CSS, and JavaScript, meeting the following requirements:
 
-- **Game Setup**: Player airplane stays at the bottom, moves left/right with arrow keys or touch controls. Enemies spawn from the top with a pseudo-3D effect (scaling by Z-depth, 0 at player, 300 at top). Canvas is responsive (max 800x600, scales to screen size).
+1. **2D Style**: Implement the game in a 2D canvas, using simple shapes (e.g., triangles for the player, rectangles for enemies and bullets) without any 3D effects or perspective.
+2. **Retro Style**: 
+   - Use a pixelated font (e.g., 'Press Start 2P' from Google Fonts).
+   - Employ a limited color palette (e.g., blue sky background, green player, red enemies, yellow bullets/rockets).
+   - Use blocky, simplified graphics reminiscent of classic arcade games.
+3. **Better Game Logic**: 
+   - Player controls a ship that moves left/right and adjusts speed (up/down).
+   - Automatically fires bullets at regular intervals; can manually fire rockets (limited supply) and use a boomshell (clears all enemies, limited use).
+   - Enemies spawn from the top, moving downward, with varying types (e.g., fast/weak, slow/strong, zigzag movement).
+   - Power-ups (health, rockets, boomshell, speed boost) spawn randomly when enemies are destroyed.
+   - Collision detection: bullets/rockets damage enemies, player takes damage from enemy collisions, game ends when health reaches zero.
+   - Include explosion particle effects (simple circles) when enemies are destroyed.
+   - Rockets recharge over time (e.g., every 30 seconds).
+   - Simple sound effects via Web Audio API (e.g., high pitch for bullets, lower for rockets/boomshell, medium for explosions).
+4. **Show Final Score**: Display the player's final score on a game over screen when the game ends.
+5. **Local Score Table**: 
+   - Store high scores locally in the browser using `localStorage`.
+   - Maintain a list of the top 10 scores with player names and scores.
+6. **Name Input and High Score Table**: 
+   - Start with a screen where the player enters their name and views the high score table.
+   - Game begins only after a name is provided.
+   - Display the high score table on the start screen, updated after each game if the score qualifies.
+7. **Pause/Resume**: 
+   - Allow pausing and resuming using the 'P' key (keyboard) or a touch button (mobile).
+   - Show a pause overlay when paused.
+8. **Local Storage**: Ensure all persistent data (high scores) is stored locally using `localStorage`.
 
-- **Controls**: Left/Right arrows (or touch) move player, Up/Down arrows adjust speed (1 to 10, base 5), Space fires rockets (if available), A key uses boomshell. Automatic bullets fire every 200ms.
+Additional Specifications:
+- **Structure**: 
+  - Use a `<canvas>` element for gameplay, with separate divs for start, pause, and game over screens.
+  - Display a status bar above the canvas showing score, level, health, rockets, and boomshells during play.
+  - Include touch controls (left, right, rocket, boomshell, pause) for mobile, visible only on small screens (e.g., via CSS media query).
+- **Game Mechanics**:
+  - Player starts with 3 health (max 5), 5 rockets, 1 boomshell.
+  - Score increases based on enemy points (e.g., 10-30 points per enemy).
+  - Level increases at score thresholds (e.g., 100, 250, 450), boosting bullet streams (e.g., 1 stream at level 1, 2 at level 2).
+  - Enemies increase in difficulty (health, speed) with level.
+- **Responsive Design**: 
+  - Canvas size adjusts to fit the screen (e.g., max 800x600px, scaled to 95% of width or 80% of height).
+  - Touch controls appear on screens smaller than 600px.
+- **Styling**: 
+  - Page background: dark gray (e.g., #333).
+  - Canvas background: solid sky blue (e.g., #87CEEB).
+  - Buttons: green (e.g., #4CAF50) with hover effect (e.g., #45a049).
+  - Overlay screens (start, pause, game over): semi-transparent black (e.g., rgba(0, 0, 0, 0.8)) with white text.
+- **Single File**: Combine all HTML, CSS (in `<style>`), and JavaScript (in `<script>`) into one `.html` file, requiring no external dependencies beyond the Google Fonts link.
 
-- **Player**: Beautiful airplane with curved body (blue gradient #1E90FF to #00BFFF), metallic wings (gray gradient #A9A9A9 to #D3D3D3), gold tail (#FFD700), glass cockpit (rgba(135, 206, 250, 0.7)), pulsating orange exhaust (rgba(255, 165, 0, 0.5)). Starts with 3 health, red health bar above. Bullet streams start at 1, +1 every 2 levels.
+Output:
+- Provide the full `.html` file as a single code block that I can copy, save as `skyfight.html`, and run directly in a web browser.
+- Include comments in the code to explain key sections (e.g., game loop, player controls, enemy spawning, high score management).
 
-- **Enemies**: Two types: Regular (40x60, 10 points) and Big (60x90, 50 points, 20% spawn chance, 70% speed). Red with 3D effect (gradient #8B0000 to #CD5C5C). Speed: base 0.5, +0.1 per level. Health: Level 1 = 1 bullet, +1 per level (big = double), green health bar above.
-
-- **Weapons**: Bullets (auto, 1 damage), Rockets (5 every 30s, 3 damage, gold), Boomshell (1 per level, clears screen).
-
-- **Levels**: Level 1 (0-99), Level 2 (100-249), Level 3 (250-449), Level 4 (450+). Adjust difficulty and bullet streams on level change.
-
-- **Effects**: Explosion on enemy destruction (10 particles regular, 20 big, orange/yellow, fade out). Sounds via Web Audio API: Bullet (800 Hz, 0.1s), Rocket (200 Hz, 0.3s), Boomshell (100 Hz, 0.5s), Explosion (300 Hz, 0.2s).
-
-- **UI**: Display 'Score: X - Level: Y - Health: Z - Rockets: W - Boomshell: V'. Centered restart button on game over. Mobile touch controls (Left, Right, Rocket, Boomshell) below 600px width.
-
-Ensure all code (HTML, CSS, JS) is in one file, responsive, and includes the explosion and sound effects.
+The result should be a fully functional, retro-style 2D shooter game where the player pilots a ship, fights
