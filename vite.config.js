@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // GitHub Pages deployment configuration
-const base = '/single-file-games/'
+const base = '/'
 
 export default defineConfig({
   plugins: [react()],
