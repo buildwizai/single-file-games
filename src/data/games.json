@@ -1,5 +1,17 @@
 [
   {
+    "id": "finding-nemo-grok3",
+    "gameId": "finding-nemo",
+    "title": "Finding Nemo: Ocean Quest",
+    "description": "A fun browser game created with GPT-4",
+    "path": "/games/finding-nemo/grok3.html",
+    "publicPath": "/games/finding-nemo/grok3.html",
+    "category": "Adventure",
+    "model": "GROK 3",
+    "image": "/images/game-placeholder.png",
+    "dateAdded": "2025-03-05"
+  },
+  {
     "id": "sky-fight-grok3",
     "gameId": "sky-fight",
     "title": "Sky Fight 2D Retro",
@@ -12,18 +24,6 @@
     "publicPath": "/games/sky-fight/grok3.html"
   },
   {
-    "id": "sky-fight-plus-grok3",
-    "gameId": "sky-fight-plus",
-    "title": "SKY FIGHT: ULTIMATE DOGFIGHT",
-    "description": "Enter Name & Press Enter",
-    "path": "/games/sky-fight-plus/grok3.html",
-    "category": "Arcade",
-    "model": "GROK 3",
-    "image": "/images/game-placeholder.png",
-    "dateAdded": "2025-03-05",
-    "publicPath": "/games/sky-fight-plus/grok3.html"
-  },
-  {
     "id": "snake-grok3",
     "gameId": "snake",
     "title": "Snake Game",
@@ -34,5 +34,17 @@
     "image": "/images/game-placeholder.png",
     "dateAdded": "2025-03-05",
     "publicPath": "/games/snake/grok3.html"
+  },
+  {
+    "id": "star-fighter-grok3",
+    "gameId": "star-fighter",
+    "title": "STAR FIGHTER: ULTIMATE DOGFIGHT",
+    "description": "Enter Name & Press Enter",
+    "path": "/games/star-fighter/grok3.html",
+    "publicPath": "/games/star-fighter/grok3.html",
+    "category": "Other",
+    "model": "GROK 3",
+    "image": "/images/game-placeholder.png",
+    "dateAdded": "2025-03-05"
   }
 ]

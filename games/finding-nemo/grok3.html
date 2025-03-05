@@ -7,10 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas {
-            display: block;
-            background: linear-gradient(180deg, #0066cc 0%, #003366 100%);
-        }
+        canvas { display: block; background: linear-gradient(180deg, #0066cc 0%, #003366 100%); }
         #overlay { position: absolute; background: rgba(0, 0, 0, 0.9); color: #fff; font-family: 'Press Start 2P', monospace; font-size: 16px; text-align: center; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; flex-direction: column; }
         #overlay.show { display: flex; }
         #introContent, #gameOverMenu, #pauseMenu, #highScores { display: none; }
@@ -20,22 +17,9 @@
         input { padding: 10px; margin: 10px; background: #333; color: #fff; border: 2px solid #fff; font-family: 'Press Start 2P', monospace; font-size: 12px; }
         #storyText { max-width: 600px; white-space: pre-wrap; }
         .hint { color: #ffff00; font-style: italic; margin-top: 20px; }
-        #storyText ul {
-            text-align: left;
-            margin: 20px auto;
-            width: 80%;
-            list-style-type: none;
-        }
-        #storyText li {
-            margin: 10px 0;
-            padding-left: 20px;
-            position: relative;
-        }
-        #storyText li:before {
-            content: "►";
-            position: absolute;
-            left: 0;
-        }
+        #storyText ul { text-align: left; margin: 20px auto; width: 80%; list-style-type: none; }
+        #storyText li { margin: 10px 0; padding-left: 20px; position: relative; }
+        #storyText li:before { content: "►"; position: absolute; left: 0; }
     </style>
 </head>
 <body>
@@ -83,7 +67,7 @@
         const gameOverMessage = document.getElementById('gameOverMessage');
 
         // Game State
-        let gameState = 'menu'; // 'menu', 'intro', 'playing', 'paused', 'gameover'
+        let gameState = 'menu';
         let playerName = '';
         let score = 0;
         let highScores = JSON.parse(localStorage.getItem('highScores')) || [];
@@ -93,8 +77,8 @@
         let particles = [];
 
         // Player (Marlin)
-        const player = { x: 50, y: 500, width: 30, height: 20, speed: 5, jumpPower: 15, vy: 0, isJumping: false, health: 100 };
-        let keys = { left: false, right: false, jump: false };
+        const player = { x: 50, y: 550, width: 30, height: 20, speed: 5, health: 100 };
+        let keys = { left: false, right: false, up: false, down: false };
 
         // Enemies, Obstacles, Goals
         let enemies = [];
@@ -116,34 +100,37 @@
             oscillator.stop(audioCtx.currentTime + duration);
         }
 
-        // Touch Controls
+        // Controls
         let touchStartX = 0;
         let touchStartY = 0;
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
-            if (gameState === 'playing' && touchStartY < canvas.height / 2) keys.jump = true;
-            if (gameState === 'paused') pauseGame(); // Toggle pause on tap
+            if (gameState === 'paused') pauseGame();
         });
         canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
             keys.left = touchX < touchStartX - 20;
             keys.right = touchX > touchStartX + 20;
+            keys.up = touchY < touchStartY - 20;
+            keys.down = touchY > touchStartY + 20;
         });
         canvas.addEventListener('touchend', (e) => {
             e.preventDefault();
             keys.left = false;
             keys.right = false;
-            keys.jump = false;
+            keys.up = false;
+            keys.down = false;
         });
 
-        // Keyboard Controls
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
-            if (e.key === ' ' && gameState === 'playing') keys.jump = true;
+            if (e.key === 'ArrowUp' || e.key === 'w') keys.up = true;
+            if (e.key === 'ArrowDown' || e.key === 's') keys.down = true;
             if (e.key === 'p' && gameState === 'playing') pauseGame();
             if (e.key === 'p' && gameState === 'paused') resumeGame();
             if (e.key === 'Enter' && gameState === 'gameover') restartGame();
@@ -151,10 +138,11 @@
         document.addEventListener('keyup', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
             if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
-            if (e.key === ' ') keys.jump = false;
+            if (e.key === 'ArrowUp' || e.key === 'w') keys.up = false;
+            if (e.key === 'ArrowDown' || e.key === 's') keys.down = false;
         });
 
-        // Particles for Visual Effects
+        // Particles
         function createParticles(x, y, color, count) {
             for (let i = 0; i < count; i++) {
                 particles.push({
@@ -181,95 +169,27 @@
         function drawParticles() {
             particles.forEach(p => {
                 ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
             });
         }
 
-        // Level Storylines
+        // Level Data
         const levelData = {
-            1: {
-                title: "Coral Reef Escape",
-                story: "After Nemo is taken, Marlin must leave his safe reef home.\nDory offers to help, but first they need to escape the dangerous reef predators!",
-                objectives: [
-                    "Dodge 3 aggressive fish",
-                    "Avoid the fishing net",
-                    "Find the way out of the reef"
-                ],
-                hint: "Use SPACE to jump over the net, and timing to avoid predators!"
-            },
-            2: {
-                title: "Jellyfish Jungle",
-                story: "A wise sea turtle mentions seeing a boat heading to Sydney.\nBut the path leads through a dangerous jellyfish forest!",
-                objectives: [
-                    "Navigate through jellyfish fields",
-                    "Don't touch any tentacles",
-                    "Find the safe passage"
-                ],
-                hint: "Jellyfish move in patterns - watch and time your movements!"
-            },
-            3: {
-                title: "Sunken Shipwreck",
-                story: "A clue leads to an old shipwreck where other fish saw the boat.\nBut ghost fish haunt these waters!",
-                objectives: [
-                    "Search the ship for clues",
-                    "Avoid ghost fish",
-                    "Escape falling debris"
-                ],
-                hint: "The ship is unstable - keep moving and watch for falling objects!"
-            },
-            4: {
-                title: "Shark Encounter",
-                story: "Bruce the shark invites you to a 'friendly' meeting.\nBut can sharks really be vegetarians?",
-                objectives: [
-                    "Survive the shark chase",
-                    "Don't let Bruce catch you",
-                    "Find an escape route"
-                ],
-                hint: "Bruce gets angry at the smell of blood - stay away when he's frenzied!"
-            },
-            5: {
-                title: "EAC Ride",
-                story: "Crush the turtle offers a ride on the East Australian Current.\nHold on tight - it's going to be a bumpy ride!",
-                objectives: [
-                    "Stay in the current",
-                    "Dodge sea rocks",
-                    "Ride to Sydney"
-                ],
-                hint: "Use the current's flow to your advantage, but watch for obstacles!"
-            },
-            6: {
-                title: "Sydney Harbor",
-                story: "Finally in Sydney! But the harbor is full of dangers.\nThe dentist's office is just ahead!",
-                objectives: [
-                    "Navigate the busy harbor",
-                    "Avoid fishing nets",
-                    "Dodge the seagulls",
-                    "Reach the dentist's office"
-                ],
-                hint: "Seagulls attack from above - time your movements carefully!"
-            },
-            7: {
-                title: "The Great Escape",
-                story: "Found Nemo! But the dentist's fish tank is heavily guarded.\nWork together to break out and return to the ocean!",
-                objectives: [
-                    "Help Nemo escape the tank",
-                    "Protect Nemo from dangers",
-                    "Return to the ocean together"
-                ],
-                hint: "Stay close to Nemo and clear the path for escape!"
-            }
+            1: { title: "Coral Reef Escape", story: "After Nemo is taken, Marlin must leave his safe reef home.\nDory offers to help, but first they need to escape the dangerous reef predators!", objectives: ["Dodge aggressive fish", "Avoid the fishing net", "Find the way out"], hint: "Navigate around obstacles and enemies carefully!" },
+            2: { title: "Jellyfish Jungle", story: "A wise sea turtle mentions seeing a boat heading to Sydney.\nBut the path leads through a dangerous jellyfish forest!", objectives: ["Navigate through jellyfish", "Avoid tentacles", "Find the safe passage"], hint: "Watch the jellyfish placement and move strategically!" },
+            3: { title: "Sunken Shipwreck", story: "A clue leads to an old shipwreck where other fish saw the boat.\nBut ghost fish haunt these waters!", objectives: ["Avoid ghost fish", "Dodge debris", "Escape the shipwreck"], hint: "Keep moving to avoid the patrolling ghost fish!" },
+            4: { title: "Shark Encounter", story: "Bruce the shark invites you to a 'friendly' meeting.\nBut can sharks really be vegetarians?", objectives: ["Survive Bruce's chase", "Find an escape route"], hint: "Stay ahead of Bruce to reach safety!" },
+            5: { title: "EAC Ride", story: "Crush the turtle offers a ride on the East Australian Current.\nHold on tight - it's going to be a bumpy ride!", objectives: ["Dodge sea rocks", "Ride to Sydney"], hint: "Weave through the rocks to stay on course!" },
+            6: { title: "Sydney Harbor", story: "Finally in Sydney! But the harbor is full of dangers.\nThe dentist's office is just ahead!", objectives: ["Avoid seagulls", "Dodge fishing nets", "Reach the office"], hint: "Time your movements to slip past dangers!" },
+            7: { title: "The Great Escape", story: "Found Nemo! But the dentist's fish tank is heavily guarded.\nWork together to break out and return to the ocean!", objectives: ["Evade the guard", "Avoid traps", "Return to the ocean"], hint: "Stay alert and move quickly to freedom!" }
         };
 
-        // Add new background elements
-        const backgroundElements = {
-            bubbles: [],
-            seaweed: [],
-            coral: []
-        };
+        // Background Elements
+        const backgroundElements = { bubbles: [], seaweed: [], coral: [] };
 
-        // Initialize background elements
         function initBackground() {
-            // Create bubbles
             for (let i = 0; i < 20; i++) {
                 backgroundElements.bubbles.push({
                     x: Math.random() * canvas.width,
@@ -278,43 +198,40 @@
                     speed: Math.random() * 2 + 1
                 });
             }
-
-            // Create seaweed
             for (let i = 0; i < 8; i++) {
                 backgroundElements.seaweed.push({
                     x: Math.random() * canvas.width,
-                    y: 550,
-                    height: Math.random() * 100 + 50,
+                    y: Math.random() * canvas.height,
+                    height: Math.random() * 50 + 30,
                     segments: Math.floor(Math.random() * 3) + 3,
-                    offset: 0
+                    swayOffset: Math.random() * 10
                 });
             }
-
-            // Create coral
             for (let i = 0; i < 5; i++) {
                 backgroundElements.coral.push({
                     x: Math.random() * canvas.width,
-                    y: 550,
+                    y: Math.random() * canvas.height,
                     size: Math.random() * 30 + 20,
-                    branches: Math.floor(Math.random() * 3) + 2
+                    branches: Math.floor(Math.random() * 3) + 2,
+                    color: Math.random() > 0.5 ? '#ff69b4' : '#9370db'
                 });
             }
         }
 
-        // Replace the drawing functions in gameLoopFn with these enhanced versions:
         function drawBackground() {
-            // Draw gradient background
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
             gradient.addColorStop(0, '#0066cc');
             gradient.addColorStop(1, '#003366');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw bubbles
             backgroundElements.bubbles.forEach(bubble => {
+                const bubbleGradient = ctx.createRadialGradient(bubble.x, bubble.y, 0, bubble.x, bubble.y, bubble.size);
+                bubbleGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                bubbleGradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+                ctx.fillStyle = bubbleGradient;
                 ctx.beginPath();
                 ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.fill();
                 bubble.y -= bubble.speed;
                 if (bubble.y < -10) {
@@ -323,69 +240,75 @@
                 }
             });
 
-            // Draw seaweed
             backgroundElements.seaweed.forEach(plant => {
                 ctx.beginPath();
                 ctx.moveTo(plant.x, plant.y);
+                const segmentHeight = plant.height / plant.segments;
                 for (let i = 0; i < plant.segments; i++) {
-                    const waveOffset = Math.sin(Date.now() / 1000 + i + plant.offset) * 15;
+                    const sway = Math.sin(Date.now() / 1000 + plant.swayOffset + i) * 5;
                     ctx.quadraticCurveTo(
-                        plant.x + waveOffset,
-                        plant.y - (plant.height / plant.segments) * (i + 0.5),
+                        plant.x + sway,
+                        plant.y - segmentHeight * (i + 0.5),
                         plant.x,
-                        plant.y - (plant.height / plant.segments) * (i + 1)
+                        plant.y - segmentHeight * (i + 1)
                     );
                 }
                 ctx.lineWidth = 5;
                 ctx.strokeStyle = '#0d5c0d';
                 ctx.stroke();
             });
+
+            backgroundElements.coral.forEach(coral => {
+                ctx.fillStyle = coral.color;
+                ctx.beginPath();
+                ctx.arc(coral.x, coral.y, coral.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                for (let i = 0; i < coral.branches; i++) {
+                    const angle = (i / coral.branches) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(coral.x, coral.y);
+                    ctx.lineTo(coral.x + Math.cos(angle) * coral.size, coral.y + Math.sin(angle) * coral.size);
+                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = coral.color;
+                    ctx.stroke();
+                }
+            });
         }
 
         function drawPlayer() {
+            const wiggle = Math.sin(Date.now() / 200) * 2;
             ctx.save();
             ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-            if (keys.left) ctx.scale(-1, 1);
 
-            // Draw fish body
+            // Body with gradient
+            const bodyGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, player.width / 2);
+            bodyGradient.addColorStop(0, '#ff8c00');
+            bodyGradient.addColorStop(1, '#ff4500');
+            ctx.fillStyle = bodyGradient;
             ctx.beginPath();
-            ctx.fillStyle = '#ff6600';
-            ctx.moveTo(-player.width/2, 0);
-            ctx.quadraticCurveTo(
-                player.width/2,
-                -player.height/2,
-                player.width/2,
-                0
-            );
-            ctx.quadraticCurveTo(
-                player.width/2,
-                player.height/2,
-                -player.width/2,
-                0
-            );
+            ctx.ellipse(0, 0, player.width / 2, player.height / 2, 0, 0, Math.PI * 2);
             ctx.fill();
 
-            // Draw fin
-            ctx.beginPath();
-            ctx.fillStyle = '#ff8533';
-            ctx.moveTo(-player.width/4, 0);
-            ctx.quadraticCurveTo(
-                -player.width/2,
-                -player.height/3,
-                -player.width/3,
-                -player.height/2
-            );
-            ctx.lineTo(-player.width/4, 0);
-            ctx.fill();
-
-            // Draw eye
-            ctx.beginPath();
-            ctx.fillStyle = 'white';
-            ctx.arc(-player.width/6, -player.height/6, 3, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
+            // Black stripes with white outline
             ctx.fillStyle = 'black';
-            ctx.arc(-player.width/6, -player.height/6, 1.5, 0, Math.PI * 2);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-player.width / 3, -player.height / 2);
+            ctx.lineTo(-player.width / 3, player.height / 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(player.width / 3, -player.height / 2);
+            ctx.lineTo(player.width / 3, player.height / 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Dorsal fin
+            ctx.fillStyle = '#ff6347';
+            ctx.beginPath();
+            ctx.moveTo(0, -player.height / 2);
+            ctx.quadraticCurveTo(wiggle, -player.height, -wiggle, -player.height / 2);
             ctx.fill();
 
             ctx.restore();
@@ -393,47 +316,61 @@
 
         function drawEnemies() {
             enemies.forEach(enemy => {
+                const wiggle = Math.sin(Date.now() / 200 + enemy.x) * 2;
                 ctx.save();
                 ctx.translate(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
-                if (enemy.speed < 0) ctx.scale(-1, 1);
 
-                // Draw enemy fish
-                ctx.beginPath();
+                // Body
                 ctx.fillStyle = '#cc0000';
-                ctx.moveTo(-enemy.width/2, 0);
-                ctx.quadraticCurveTo(
-                    enemy.width/2,
-                    -enemy.height/2,
-                    enemy.width/2,
-                    0
-                );
-                ctx.quadraticCurveTo(
-                    enemy.width/2,
-                    enemy.height/2,
-                    -enemy.width/2,
-                    0
-                );
+                ctx.beginPath();
+                ctx.ellipse(0, 0, enemy.width / 2, enemy.height / 2, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Draw fin
+                // Fin
+                ctx.fillStyle = '#ff3333';
                 ctx.beginPath();
-                ctx.fillStyle = '#ff1a1a';
                 ctx.moveTo(0, 0);
-                ctx.quadraticCurveTo(
-                    -enemy.width/4,
-                    -enemy.height/2,
-                    0,
-                    -enemy.height
-                );
+                ctx.lineTo(-enemy.width / 2, -enemy.height / 2 + wiggle);
+                ctx.lineTo(enemy.width / 2, -enemy.height / 2);
                 ctx.fill();
 
                 ctx.restore();
             });
         }
 
-        // Initialize Level
-        let currentObjectives = [];
-        let completedObjectives = new Set();
+        function drawBoss() {
+            if (!boss) return;
+            const wiggle = Math.sin(Date.now() / 200) * 3;
+            ctx.save();
+            ctx.translate(boss.x + boss.width / 2, boss.y + boss.height / 2);
+
+            // Body with gradient
+            const bodyGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.width / 2);
+            bodyGradient.addColorStop(0, '#808080');
+            bodyGradient.addColorStop(1, '#404040');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, boss.width / 2, boss.height / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dorsal fin
+            ctx.fillStyle = '#696969';
+            ctx.beginPath();
+            ctx.moveTo(0, -boss.height / 2);
+            ctx.lineTo(-boss.width / 4 + wiggle, -boss.height);
+            ctx.lineTo(boss.width / 4, -boss.height / 2);
+            ctx.fill();
+
+            // Teeth
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(-boss.width / 4, boss.height / 2);
+            ctx.lineTo(0, boss.height / 2 + 5);
+            ctx.lineTo(boss.width / 4, boss.height / 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
 
         function initLevel() {
             enemies = [];
@@ -441,46 +378,136 @@
             goal = null;
             boss = null;
             player.x = 50;
-            player.y = 500;
-            player.vy = 0;
-            player.isJumping = false;
+            player.y = canvas.height - 50;
 
-            if (level === 1) { // Coral Reef Escape
-                for (let i = 0; i < 3; i++) enemies.push({ x: 200 + i * 200, y: 500, width: 20, height: 20, speed: 2 });
-                obstacles.push({ x: 400, y: 550, width: 100, height: 10, type: 'net', damage: 20 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 2) { // Jellyfish Jungle
-                for (let i = 0; i < 4; i++) obstacles.push({ x: 200 + i * 150, y: 450, width: 15, height: 30, type: 'jellyfish', damage: 20 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 3) { // Sunken Shipwreck
-                for (let i = 0; i < 2; i++) enemies.push({ x: 300 + i * 200, y: 500, width: 20, height: 20, speed: 3 });
-                obstacles.push({ x: 500, y: 550, width: 50, height: 10, type: 'debris', damage: 15 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 4) { // Shark Encounter
-                boss = { x: 600, y: 400, width: 50, height: 30, speed: 2, health: 30 };
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 5) { // EAC Ride
-                for (let i = 0; i < 5; i++) obstacles.push({ x: 200 + i * 120, y: 450, width: 10, height: 20, type: 'rock', damage: 15 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 6) { // Sydney Harbor Rescue
-                for (let i = 0; i < 3; i++) enemies.push({ x: 200 + i * 200, y: 500, width: 20, height: 20, speed: 2 });
-                obstacles.push({ x: 400, y: 550, width: 80, height: 10, type: 'net', damage: 20 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
-            } else if (level === 7) { // The Great Escape
-                boss = { x: 600, y: 400, width: 50, height: 30, speed: 3, health: 40 };
-                obstacles.push({ x: 300, y: 550, width: 60, height: 10, type: 'net', damage: 20 });
-                goal = { x: 750, y: 500, width: 20, height: 20 };
+            if (level === 1) {
+                enemies.push({ x: 100, y: 100, width: 20, height: 15, speed: 2, direction: 'horizontal' });
+                enemies.push({ x: 300, y: 300, width: 20, height: 15, speed: 2, direction: 'vertical' });
+                enemies.push({ x: 500, y: 200, width: 20, height: 15, speed: 2, direction: 'horizontal' });
+                obstacles.push({ x: 300, y: 200, width: 200, height: 20, type: 'net', damage: 20 });
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 2) {
+                for (let i = 0; i < 10; i++) {
+                    obstacles.push({ x: Math.random() * (canvas.width - 100) + 50, y: Math.random() * (canvas.height - 100) + 50, width: 25, height: 25, type: 'jellyfish', damage: 20 });
+                }
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 3) {
+                enemies.push({ x: 200, y: 100, width: 20, height: 15, speed: 3, direction: 'horizontal' });
+                enemies.push({ x: 400, y: 300, width: 20, height: 15, speed: 3, direction: 'vertical' });
+                obstacles.push({ x: 500, y: 250, width: 50, height: 50, type: 'debris', damage: 15 });
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 4) {
+                boss = { x: 600, y: 400, width: 60, height: 40, speed: 2 };
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 5) {
+                for (let i = 0; i < 8; i++) {
+                    obstacles.push({ x: Math.random() * (canvas.width - 100) + 50, y: Math.random() * (canvas.height - 100) + 50, width: 30, height: 30, type: 'rock', damage: 15 });
+                }
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 6) {
+                enemies.push({ x: 200, y: 100, width: 20, height: 15, speed: 2, direction: 'horizontal' });
+                enemies.push({ x: 400, y: 300, width: 20, height: 15, speed: 2, direction: 'vertical' });
+                obstacles.push({ x: 300, y: 200, width: 100, height: 20, type: 'net', damage: 20 });
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
+            } else if (level === 7) {
+                boss = { x: 600, y: 400, width: 60, height: 40, speed: 3 };
+                obstacles.push({ x: 300, y: 200, width: 80, height: 20, type: 'net', damage: 20 });
+                goal = { x: canvas.width - 50, y: 50, width: 20, height: 15 };
             }
 
-            // Initialize level objectives
-            currentObjectives = [...levelData[level].objectives];
-            completedObjectives.clear();
-
-            // Show level intro
             showLevelIntro();
         }
 
-        // Replace the showLevelIntro function
+        function drawObstaclesAndGoal() {
+            obstacles.forEach(obstacle => {
+                ctx.save();
+                ctx.translate(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
+                if (obstacle.type === 'jellyfish') {
+                    const pulse = Math.sin(Date.now() / 500) * 2;
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, obstacle.width / 2 + pulse, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ff66ff';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(i * 5 - 5, obstacle.height / 2);
+                        ctx.quadraticCurveTo(0, obstacle.height / 2 + 10 + pulse, -i * 5 + 5, obstacle.height / 2);
+                        ctx.stroke();
+                    }
+                } else if (obstacle.type === 'net') {
+                    ctx.fillStyle = 'rgba(136, 136, 136, 0.7)';
+                    ctx.fillRect(-obstacle.width / 2, -obstacle.height / 2, obstacle.width, obstacle.height);
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 1;
+                    for (let i = 0; i < obstacle.width; i += 10) {
+                        ctx.beginPath();
+                        ctx.moveTo(i - obstacle.width / 2, -obstacle.height / 2);
+                        ctx.lineTo(i - obstacle.width / 2, obstacle.height / 2);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(-obstacle.width / 2, i - obstacle.height / 2);
+                        ctx.lineTo(obstacle.width / 2, i - obstacle.height / 2);
+                        ctx.stroke();
+                    }
+                } else if (obstacle.type === 'rock') {
+                    ctx.fillStyle = '#555555';
+                    ctx.beginPath();
+                    ctx.moveTo(-obstacle.width / 2, -obstacle.height / 2);
+                    ctx.lineTo(0, -obstacle.height / 2 - 5);
+                    ctx.lineTo(obstacle.width / 2, -obstacle.height / 2);
+                    ctx.lineTo(obstacle.width / 2 + 5, obstacle.height / 2);
+                    ctx.lineTo(0, obstacle.height / 2 + 5);
+                    ctx.lineTo(-obstacle.width / 2 - 5, obstacle.height / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (obstacle.type === 'debris') {
+                    ctx.fillStyle = '#8b4513';
+                    ctx.beginPath();
+                    ctx.moveTo(-obstacle.width / 2, -obstacle.height / 2);
+                    ctx.lineTo(obstacle.width / 2, -obstacle.height / 2 - 5);
+                    ctx.lineTo(obstacle.width / 2 + 5, obstacle.height / 2);
+                    ctx.lineTo(-obstacle.width / 2 + 5, obstacle.height / 2 + 5);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            if (goal) {
+                ctx.save();
+                ctx.translate(goal.x + goal.width / 2, goal.y + goal.height / 2);
+                const wiggle = Math.sin(Date.now() / 200) * 2;
+                const bodyGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, goal.width / 2);
+                bodyGradient.addColorStop(0, '#ff8c00');
+                bodyGradient.addColorStop(1, '#ff4500');
+                ctx.fillStyle = bodyGradient;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, goal.width / 2, goal.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(-goal.width / 3, -goal.height / 2);
+                ctx.lineTo(-goal.width / 3, goal.height / 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(goal.width / 3, -goal.height / 2);
+                ctx.lineTo(goal.width / 3, goal.height / 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#ff6347';
+                ctx.beginPath();
+                ctx.moveTo(0, -goal.height / 2);
+                ctx.quadraticCurveTo(wiggle, -goal.height, -wiggle, -goal.height / 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
         function showLevelIntro() {
             gameState = 'levelIntro';
             overlay.classList.add('show');
@@ -496,7 +523,6 @@
             `;
         }
 
-        // Add new function to handle level start
         function beginLevel() {
             gameState = 'playing';
             overlay.classList.remove('show');
@@ -504,7 +530,6 @@
             gameLoop = requestAnimationFrame(gameLoopFn);
         }
 
-        // Update the startGame function
         function startGame() {
             score = 0;
             lives = 3;
@@ -512,10 +537,8 @@
             player.health = 100;
             initLevel();
             initBackground();
-            // Remove the direct game start, let showLevelIntro handle it
         }
 
-        // Update validateNameAndStart function
         function validateNameAndStart() {
             playerName = playerNameInput.value.trim();
             if (!playerName) {
@@ -536,31 +559,24 @@
             `;
         }
 
-        // Update the gameLoopFn to use new drawing functions
         function gameLoopFn() {
             if (gameState !== 'playing') return;
 
             // Update Player
             if (keys.left && player.x > 0) player.x -= player.speed;
             if (keys.right && player.x < canvas.width - player.width) player.x += player.speed;
-            if (keys.jump && !player.isJumping) {
-                player.vy = -player.jumpPower;
-                player.isJumping = true;
-                playSound(440);
-                createParticles(player.x + player.width / 2, player.y + player.height, '#ff4500', 5);
-            }
-            player.vy += 0.8; // Gravity
-            player.y += player.vy;
-            if (player.y > 500) {
-                player.y = 500;
-                player.vy = 0;
-                player.isJumping = false;
-            }
+            if (keys.up && player.y > 0) player.y -= player.speed;
+            if (keys.down && player.y < canvas.height - player.height) player.y += player.speed;
 
             // Update Enemies
             enemies.forEach(enemy => {
-                enemy.x += enemy.speed;
-                if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) enemy.speed *= -1;
+                if (enemy.direction === 'horizontal') {
+                    enemy.x += enemy.speed;
+                    if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) enemy.speed *= -1;
+                } else if (enemy.direction === 'vertical') {
+                    enemy.y += enemy.speed;
+                    if (enemy.y <= 0 || enemy.y >= canvas.height - enemy.height) enemy.speed *= -1;
+                }
                 if (checkCollision(player, enemy)) {
                     player.health -= 10;
                     enemies.splice(enemies.indexOf(enemy), 1);
@@ -572,17 +588,17 @@
 
             // Update Boss
             if (boss) {
-                boss.x += boss.speed;
-                if (boss.x <= 200 || boss.x >= canvas.width - boss.width) boss.speed *= -1;
+                const dx = player.x - boss.x;
+                const dy = player.y - boss.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > 0) {
+                    boss.x += (dx / distance) * boss.speed;
+                    boss.y += (dy / distance) * boss.speed;
+                }
                 if (checkCollision(player, boss)) {
-                    boss.health -= 5;
                     player.health -= 15;
                     playSound(110);
                     createParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, '#800080', 10);
-                    if (boss.health <= 0) {
-                        score += 50;
-                        boss = null;
-                    }
                 }
             }
 
@@ -627,67 +643,19 @@
             drawBackground();
             drawPlayer();
             drawEnemies();
-            // Draw Obstacles (Jellyfish, Nets, Rocks)
-            obstacles.forEach(obstacle => {
-                if (obstacle.type === 'jellyfish') ctx.fillStyle = '#ff00ff';
-                else if (obstacle.type === 'net') ctx.fillStyle = '#888888';
-                else if (obstacle.type === 'rock') ctx.fillStyle = '#555555';
-                else ctx.fillStyle = '#ffffff';
-                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-            });
-
-            // Draw Goal (Nemo or Progression Point as a cyan rectangle)
-            if (goal) {
-                ctx.fillStyle = '#00ffff';
-                ctx.fillRect(goal.x, goal.y, goal.width, goal.height);
-            }
-
-            // Draw Particles
+            drawBoss();
+            drawObstaclesAndGoal();
             drawParticles();
-
-            // Draw HUD
             drawHUD();
 
             requestAnimationFrame(gameLoopFn);
         }
 
-        // Collision Detection
         function checkCollision(obj1, obj2) {
             return obj1.x < obj2.x + obj2.width &&
                    obj1.x + obj1.width > obj2.x &&
                    obj1.y < obj2.y + obj2.height &&
                    obj1.y + obj1.height > obj2.y;
-        }
-
-        // Game State Management
-        function validateNameAndStart() {
-            playerName = playerNameInput.value.trim();
-            if (!playerName) {
-                alert('Please enter your name to start the game!');
-                return;
-            }
-            gameState = 'intro';
-            overlay.classList.add('show');
-            menuContent.style.display = 'none';
-            introContent.style.display = 'block';
-            storyText.innerHTML = `
-                <h2>Finding Nemo</h2>
-                <p>Marlin, a clownfish, wakes to find his son Nemo gone!
-                A diver took him to Sydney!
-                With Dory's help, Marlin must brave the ocean.
-                Dodge dangers, find clues, and rescue Nemo!</p>
-                <button onclick="startGame()">Start Adventure</button>
-            `;
-        }
-
-        function startGame() {
-            score = 0;
-            lives = 3;
-            level = 1;
-            player.health = 100;
-            initLevel();
-            initBackground();
-            // Remove the direct game start, let showLevelIntro handle it
         }
 
         function pauseGame() {
@@ -761,25 +729,6 @@
             highScoresDiv.style.display = 'none';
         }
 
-        // Initial State
-        overlay.classList.add('show');
-
-        // Add level completion check to gameLoopFn
-        function checkLevelObjectives() {
-            switch(level) {
-                case 1:
-                    if (enemies.length <= 1) completedObjectives.add(0);
-                    if (player.y < 300) completedObjectives.add(1);
-                    if (player.x > canvas.width * 0.8) completedObjectives.add(2);
-                    break;
-                case 2:
-                    // Add similar objective checks for other levels
-                    break;
-                // Add cases for other levels
-            }
-        }
-
-        // Modify the drawHUD function in gameLoopFn
         function drawHUD() {
             ctx.fillStyle = '#ffffff';
             ctx.font = '12px "Press Start 2P"';
@@ -787,16 +736,10 @@
             ctx.fillText(`Lives: ${lives}`, 10, 50);
             ctx.fillText(`Health: ${player.health}`, 10, 70);
             ctx.fillText(`Level: ${level}`, 10, 90);
-
-            // Draw objectives
-            ctx.font = '10px "Press Start 2P"';
-            ctx.fillText('Objectives:', canvas.width - 200, 30);
-            currentObjectives.forEach((obj, i) => {
-                const completed = completedObjectives.has(i);
-                ctx.fillStyle = completed ? '#00ff00' : '#ffffff';
-                ctx.fillText(`${completed ? '✓' : '•'} ${obj}`, canvas.width - 190, 50 + i * 20);
-            });
         }
+
+        // Initial State
+        overlay.classList.add('show');
     </script>
 </body>
 </html>
