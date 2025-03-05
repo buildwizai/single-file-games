@@ -1,0 +1,35 @@
+[
+  {
+    "id": "sky-fight-grok3",
+    "gameId": "sky-fight",
+    "title": "Sky Fight 2D Retro",
+    "description": "Press 'P' to resume",
+    "path": "/games/sky-fight/grok3.html",
+    "category": "Other",
+    "model": "GROK 3",
+    "image": "/images/game-placeholder.png",
+    "dateAdded": "2025-03-05"
+  },
+  {
+    "id": "sky-fight-plus-grok3",
+    "gameId": "sky-fight-plus",
+    "title": "SKY FIGHT: ULTIMATE DOGFIGHT",
+    "description": "Enter Name & Press Enter",
+    "path": "/games/sky-fight-plus/grok3.html",
+    "category": "Arcade",
+    "model": "GROK 3",
+    "image": "/images/game-placeholder.png",
+    "dateAdded": "2025-03-05"
+  },
+  {
+    "id": "snake-grok3",
+    "gameId": "snake",
+    "title": "Snake Game",
+    "description": "Press 'P' to resume",
+    "path": "/games/snake/grok3.html",
+    "category": "Other",
+    "model": "GROK 3",
+    "image": "/images/game-placeholder.png",
+    "dateAdded": "2025-03-05"
+  }
+]

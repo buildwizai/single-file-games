@@ -48,8 +48,8 @@ const GameCard = ({ game }) => {
       <div className="p-4">
         <h3 className="retro-text text-lg mb-4">{game.title}</h3>
         <p className="text-gray-400 mb-6 text-sm">{game.description}</p>
-        <a 
-          href={`${game.path}/${game.file}`}
+        <a
+          href={`${game.path}`}
           className="retro-button block w-full text-center text-sm mb-4"
           target="_blank"
           rel="noreferrer"

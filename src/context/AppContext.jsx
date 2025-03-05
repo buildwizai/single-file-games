@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { games } from '../data/games';
+import gamesData from '../data/games.json';
+const games = gamesData;
 
 const AppContext = createContext(null);
 
