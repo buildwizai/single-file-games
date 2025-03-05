@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sky Fight 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #333;
+            overflow: hidden;
+        }
+        #gameContainer {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+        }
+        canvas {
+            border: 1px solid black;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            width: 100%;
+            height: 80vh;
+            max-width: 800px;
+            max-height: 600px;
+            display: block;
+        }
+        #score {
+            font-family: Arial, sans-serif;
+            font-size: clamp(16px, 3vw, 24px);
+            color: white;
+            margin-bottom: 1vh;
+        }
+        #restartBtn {
+            display: none;
+            padding: 1vh 2vw;
+            font-size: clamp(14px, 2.5vw, 18px);
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        #restartBtn:hover {
+            background-color: #45a049;
+        }
+        #touchControls {
+            display: none;
+            position: absolute;
+            bottom: 5%;
+            left: 0;
+            right: 0;
+            justify-content: space-between;
+            padding: 0 5%;
+        }
+        .touchBtn {
+            width: 15vw;
+            height: 15vw;
+            max-width: 60px;
+            max-height: 60px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            border: 2px solid #000;
+            touch-action: none;
+        }
+        @media (max-width: 600px) {
+            #touchControls {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="score">Score: 0 - Level: 1 - Health: 3 - Rockets: 5 - Boomshell: 1</div>
+        <canvas id="gameCanvas"></canvas>
+        <button id="restartBtn" onclick="restartGame()">Restart Game</button>
+        <div id="touchControls">
+            <div id="leftBtn" class="touchBtn"></div>
+            <div id="rightBtn" class="touchBtn"></div>
+            <div id="rocketBtn" class="touchBtn"></div>
+            <div id="boomBtn" class="touchBtn"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const restartBtn = document.getElementById('restartBtn');
+        const touchControls = document.getElementById('touchControls');
+        const leftBtn = document.getElementById('leftBtn');
+        const rightBtn = document.getElementById('rightBtn');
+        const rocketBtn = document.getElementById('rocketBtn');
+        const boomBtn = document.getElementById('boomBtn');
+
+        // Set canvas size responsively
+        canvas.width = Math.min(800, window.innerWidth * 0.95);
+        canvas.height = Math.min(600, window.innerHeight * 0.8);
+
+        // Game objects
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            width: 50,
+            height: 70,
+            baseSpeed: 5,
+            speed: 5,
+            health: 3,
+            bullets: [],
+            rockets: [],
+            rocketsAvailable: 5,
+            boomshells: 1,
+            lastBulletTime: 0,
+            bulletStreams: 1
+        };
+
+        let enemies = [];
+        let particles = [];  // For explosion effects
+        let score = 0;
+        let level = 1;
+        let gameOver = false;
+        let lastRocketTime = Date.now();
+
+        // Sound effects (simple sine wave tones using Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(frequency, duration, volume = 0.1) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = volume;
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // Player controls
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false,
+            ArrowUp: false,
+            ArrowDown: false,
+            Space: false,  // Rockets
+            KeyA: false   // Boomshell
+        };
+
+        // Event listeners for keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.code in keys) {
+                keys[e.code] = true;
+                if (e.code === 'Space' && !gameOver && player.rocketsAvailable > 0) shootRocket();
+                if (e.code === 'KeyA' && !gameOver && player.boomshells > 0) useBoomshell();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code in keys) keys[e.code] = false;
+        });
+
+        // Touch controls for mobile
+        leftBtn.addEventListener('touchstart', () => keys.ArrowLeft = true);
+        leftBtn.addEventListener('touchend', () => keys.ArrowLeft = false);
+        rightBtn.addEventListener('touchstart', () => keys.ArrowRight = true);
+        rightBtn.addEventListener('touchend', () => keys.ArrowRight = false);
+        rocketBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameOver && player.rocketsAvailable > 0) shootRocket();
+        });
+        boomBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameOver && player.boomshells > 0) useBoomshell();
+        });
+
+        // Shoot normal bullets (automatic, multiple streams)
+        function shootBullet() {
+            const streamCount = player.bulletStreams;
+            const spacing = 10;
+            const startX = player.x + player.width / 2 - (streamCount - 1) * spacing / 2;
+            for (let i = 0; i < streamCount; i++) {
+                player.bullets.push({
+                    x: startX + i * spacing,
+                    y: player.y,
+                    z: 0,
+                    width: 4,
+                    height: 10,
+                    speed: 7
+                });
+            }
+            playSound(800, 0.1, 0.05);  // Bullet sound: high-pitched, short
+        }
+
+        // Shoot big rocket
+        function shootRocket() {
+            player.rockets.push({
+                x: player.x + player.width / 2 - 5,
+                y: player.y,
+                z: 0,
+                width: 10,
+                height: 20,
+                speed: 9
+            });
+            player.rocketsAvailable--;
+            updateDisplay();
+            playSound(200, 0.3, 0.1);  // Rocket sound: lower pitch, longer
+        }
+
+        // Use boomshell (destroy all enemies)
+        function useBoomshell() {
+            enemies = [];
+            player.boomshells--;
+            updateDisplay();
+            playSound(100, 0.5, 0.15);  // Boomshell sound: deep, impactful
+        }
+
+        // Create enemy (regular or big)
+        function spawnEnemy() {
+            const isBig = Math.random() < 0.2;
+            const baseSpeed = 0.5 + (level - 1) * 0.1;
+            const hitsNeeded = level;
+            enemies.push({
+                x: Math.random() * (canvas.width - (isBig ? 60 : 40)),
+                y: 0,
+                z: 300,
+                width: isBig ? 60 : 40,
+                height: isBig ? 90 : 60,
+                speed: isBig ? baseSpeed * 0.7 : baseSpeed,
+                health: isBig ? hitsNeeded * 2 : hitsNeeded,
+                maxHealth: isBig ? hitsNeeded * 2 : hitsNeeded,
+                isBig: isBig,
+                points: isBig ? 50 : 10
+            });
+        }
+
+        // Create explosion particles
+        function createExplosion(x, y, z, isBig) {
+            const particleCount = isBig ? 20 : 10;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    z: z,
+                    radius: Math.random() * 5 + 2,
+                    speedX: (Math.random() - 0.5) * 4,
+                    speedY: (Math.random() - 0.5) * 4,
+                    speedZ: (Math.random() - 0.5) * 2,
+                    life: 1.0,
+                    color: `hsl(${Math.random() * 60 + 10}, 100%, 50%)`  // Shades of orange/yellow
+                });
+            }
+            playSound(300, 0.2, 0.1);  // Explosion sound: medium pitch, short
+        }
+
+        // Draw beautiful player airplane with enhanced 3D effect
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x + player.width/2, player.y + player.height/2);
+
+            const bodyGradient = ctx.createLinearGradient(-25, 0, 25, 0);
+            bodyGradient.addColorStop(0, '#1E90FF');
+            bodyGradient.addColorStop(1, '#00BFFF');
+            ctx.fillStyle = bodyGradient;
+            ctx.beginPath();
+            ctx.moveTo(0, -40);
+            ctx.quadraticCurveTo(25, 0, 20, 30);
+            ctx.quadraticCurveTo(10, 35, 0, 40);
+            ctx.quadraticCurveTo(-10, 35, -20, 30);
+            ctx.quadraticCurveTo(-25, 0, 0, -40);
+            ctx.closePath();
+            ctx.fill();
+
+            const wingGradient = ctx.createLinearGradient(-40, 0, 40, 0);
+            wingGradient.addColorStop(0, '#A9A9A9');
+            wingGradient.addColorStop(1, '#D3D3D3');
+            ctx.fillStyle = wingGradient;
+            ctx.beginPath();
+            ctx.moveTo(-45, -5);
+            ctx.lineTo(45, -5);
+            ctx.quadraticCurveTo(35, 15, 25, 20);
+            ctx.lineTo(-25, 20);
+            ctx.quadraticCurveTo(-35, 15, -45, -5);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.moveTo(-15, 25);
+            ctx.lineTo(15, 25);
+            ctx.quadraticCurveTo(10, 45, 0, 50);
+            ctx.quadraticCurveTo(-10, 45, -15, 25);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(135, 206, 250, 0.7)';
+            ctx.beginPath();
+            ctx.moveTo(-10, -20);
+            ctx.quadraticCurveTo(0, -30, 10, -20);
+            ctx.lineTo(8, -10);
+            ctx.quadraticCurveTo(0, -15, -8, -10);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(255, 165, 0, 0.5)';
+            ctx.beginPath();
+            ctx.arc(0, 45, 10 + Math.sin(Date.now() / 200) * 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            const healthWidth = 40 * (player.health / 3);
+            ctx.fillStyle = 'red';
+            ctx.fillRect(-20, -50, healthWidth, 5);
+
+            ctx.restore();
+        }
+
+        // Draw bullets
+        function drawBullets() {
+            player.bullets.forEach(bullet => {
+                const scale = 1 - (bullet.z / 300);
+                ctx.save();
+                ctx.translate(bullet.x, bullet.y);
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#FF4500';
+                ctx.fillRect(-bullet.width/2, -bullet.height/2, bullet.width, bullet.height);
+                ctx.restore();
+            });
+        }
+
+        // Draw rockets
+        function drawRockets() {
+            player.rockets.forEach(rocket => {
+                const scale = 1 - (rocket.z / 300);
+                ctx.save();
+                ctx.translate(rocket.x, rocket.y);
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(0, -10);
+                ctx.lineTo(5, 10);
+                ctx.lineTo(-5, 10);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        // Draw explosion particles
+        function drawParticles() {
+            particles.forEach((particle, index) => {
+                const scale = 1 - (particle.z / 300);
+                ctx.save();
+                ctx.translate(particle.x, particle.y);
+                ctx.scale(scale, scale);
+                ctx.fillStyle = particle.color;
+                ctx.globalAlpha = particle.life;
+                ctx.beginPath();
+                ctx.arc(0, 0, particle.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Update particle
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.z += particle.speedZ;
+                particle.life -= 0.05;
+                particle.radius += 0.2;
+
+                if (particle.life <= 0) particles.splice(index, 1);
+            });
+        }
+
+        // Draw enemy with 3D effect (regular or big)
+        function drawEnemy(enemy) {
+            const scale = 1 - (enemy.z / 300);
+            ctx.save();
+            ctx.translate(enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+            ctx.scale(scale, scale);
+
+            const gradient = ctx.createLinearGradient(-enemy.width/2, 0, enemy.width/2, 0);
+            gradient.addColorStop(0, '#8B0000');
+            gradient.addColorStop(1, '#CD5C5C');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(0, -enemy.height/2);
+            ctx.lineTo(enemy.width/2, enemy.height/2);
+            ctx.lineTo(-enemy.width/2, enemy.height/2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#A52A2A';
+            ctx.beginPath();
+            ctx.moveTo(-enemy.width * 0.6, 0);
+            ctx.lineTo(enemy.width * 0.6, 0);
+            ctx.lineTo(enemy.width * 0.4, enemy.height * 0.2);
+            ctx.lineTo(-enemy.width * 0.4, enemy.height * 0.2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#A52A2A';
+            ctx.beginPath();
+            ctx.moveTo(-enemy.width * 0.2, enemy.height * 0.3);
+            ctx.lineTo(enemy.width * 0.2, enemy.height * 0.3);
+            ctx.lineTo(0, enemy.height * 0.5);
+            ctx.closePath();
+            ctx.fill();
+
+            const healthWidth = 30 * (enemy.health / enemy.maxHealth);
+            ctx.fillStyle = 'green';
+            ctx.fillRect(-15, -enemy.height/2 - 10, healthWidth, 5);
+
+            ctx.restore();
+        }
+
+        // Update game state
+        function update() {
+            if (gameOver) return;
+
+            // Player movement
+            if (keys.ArrowLeft && player.x > 0) player.x -= player.speed;
+            if (keys.ArrowRight && player.x < canvas.width - player.width) player.x += player.speed;
+            
+            // Speed control
+            if (keys.ArrowUp) player.speed = Math.min(player.baseSpeed * 2, player.speed + 0.1);
+            if (keys.ArrowDown) player.speed = Math.max(1, player.speed - 0.1);
+            if (!keys.ArrowUp && !keys.ArrowDown) player.speed = player.baseSpeed;
+
+            // Automatic bullet firing
+            const currentTime = Date.now();
+            if (currentTime - player.lastBulletTime >= 200) {
+                shootBullet();
+                player.lastBulletTime = currentTime;
+            }
+
+            // Update bullets
+            player.bullets.forEach((bullet, index) => {
+                bullet.y -= bullet.speed;
+                bullet.z += bullet.speed;
+                if (bullet.y < 0 || bullet.z > 300) player.bullets.splice(index, 1);
+            });
+
+            // Update rockets
+            player.rockets.forEach((rocket, index) => {
+                rocket.y -= rocket.speed;
+                rocket.z += rocket.speed;
+                if (rocket.y < 0 || rocket.z > 300) player.rockets.splice(index, 1);
+            });
+
+            // Rocket recharge
+            if (currentTime - lastRocketTime >= 30000 && player.rocketsAvailable < 5) {
+                player.rocketsAvailable = 5;
+                lastRocketTime = currentTime;
+                updateDisplay();
+            }
+
+            // Update enemies
+            enemies.forEach((enemy, eIndex) => {
+                const speedFactor = player.speed / player.baseSpeed;
+                enemy.z -= enemy.speed * speedFactor;
+                enemy.y = canvas.height * (1 - (enemy.z / 300));
+
+                // Bullet collision
+                player.bullets.forEach((bullet, bIndex) => {
+                    const scaledEnemyWidth = enemy.width * (1 - enemy.z/300);
+                    const scaledEnemyHeight = enemy.height * (1 - enemy.z/300);
+                    if (bullet.x < enemy.x + scaledEnemyWidth &&
+                        bullet.x + bullet.width > enemy.x &&
+                        bullet.y < enemy.y + scaledEnemyHeight &&
+                        bullet.y + bullet.height > enemy.y &&
+                        Math.abs(bullet.z - enemy.z) < 20) {
+                        enemy.health--;
+                        player.bullets.splice(bIndex, 1);
+                        if (enemy.health <= 0) {
+                            createExplosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.z, enemy.isBig);
+                            enemies.splice(eIndex, 1);
+                            score += enemy.points;
+                            updateLevel();
+                        }
+                    }
+                });
+
+                // Rocket collision (3x damage)
+                player.rockets.forEach((rocket, rIndex) => {
+                    const scaledEnemyWidth = enemy.width * (1 - enemy.z/300);
+                    const scaledEnemyHeight = enemy.height * (1 - enemy.z/300);
+                    if (rocket.x < enemy.x + scaledEnemyWidth &&
+                        rocket.x + rocket.width > enemy.x &&
+                        rocket.y < enemy.y + scaledEnemyHeight &&
+                        rocket.y + rocket.height > enemy.y &&
+                        Math.abs(rocket.z - enemy.z) < 20) {
+                        enemy.health -= 3;
+                        player.rockets.splice(rIndex, 1);
+                        if (enemy.health <= 0) {
+                            createExplosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.z, enemy.isBig);
+                            enemies.splice(eIndex, 1);
+                            score += enemy.points;
+                            updateLevel();
+                        }
+                    }
+                });
+
+                // Player collision
+                const scaledEnemyWidth = enemy.width * (1 - enemy.z/300);
+                const scaledEnemyHeight = enemy.height * (1 - enemy.z/300);
+                if (enemy.z < 20 &&
+                    player.x < enemy.x + scaledEnemyWidth &&
+                    player.x + player.width > enemy.x &&
+                    player.y < enemy.y + scaledEnemyHeight &&
+                    player.y + player.height > enemy.y) {
+                    player.health--;
+                    createExplosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.z, enemy.isBig);
+                    enemies.splice(eIndex, 1);
+                    updateDisplay();
+                    if (player.health <= 0) {
+                        gameOver = true;
+                        ctx.fillStyle = 'white';
+                        ctx.font = '48px Arial';
+                        ctx.fillText('Game Over!', canvas.width/2 - 140, canvas.height/2);
+                        ctx.font = '24px Arial';
+                        ctx.fillText(`Final Score: ${score} - Level: ${level}`, canvas.width/2 - 120, canvas.height/2 + 40);
+                        restartBtn.style.display = 'block';
+                    }
+                }
+
+                if (enemy.z < -20) enemies.splice(eIndex, 1);
+            });
+
+            // Spawn enemies
+            if (Math.random() < 0.02 / (1 + level * 0.1)) spawnEnemy();
+
+            // Update particles
+            drawParticles();
+        }
+
+        // Update level based on specific score thresholds
+        function updateLevel() {
+            let newLevel = 1;
+            if (score >= 450) newLevel = 4;
+            else if (score >= 250) newLevel = 3;
+            else if (score >= 100) newLevel = 2;
+
+            if (newLevel !== level) {
+                level = newLevel;
+                player.boomshells = 1;
+                player.bulletStreams = 1 + Math.floor(level / 2);
+            }
+            updateDisplay();
+        }
+
+        // Update score display with health
+        function updateDisplay() {
+            scoreDisplay.textContent = `Score: ${score} - Level: ${level} - Health: ${player.health} - Rockets: ${player.rocketsAvailable} - Boomshell: ${player.boomshells}`;
+        }
+
+        // Restart game
+        function restartGame() {
+            player = {
+                x: canvas.width / 2,
+                y: canvas.height - 80,
+                width: 50,
+                height: 70,
+                baseSpeed: 5,
+                speed: 5,
+                health: 3,
+                bullets: [],
+                rockets: [],
+                rocketsAvailable: 5,
+                boomshells: 1,
+                lastBulletTime: 0,
+                bulletStreams: 1
+            };
+            enemies = [];
+            particles = [];
+            score = 0;
+            level = 1;
+            gameOver = false;
+            lastRocketTime = Date.now();
+            updateDisplay();
+            restartBtn.style.display = 'none';
+        }
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = Math.min(800, window.innerWidth * 0.95);
+            canvas.height = Math.min(600, window.innerHeight * 0.8);
+            player.x = Math.min(player.x, canvas.width - player.width);
+            player.y = canvas.height - 80;
+        });
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            update();
+            drawPlayer();
+            drawBullets();
+            drawRockets();
+            enemies.forEach(enemy => drawEnemy(enemy));
+            drawParticles();  // Draw explosion particles
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game
+        gameLoop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky Fight 3D</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; text-align: center; }
+        canvas { display: block; margin: auto; background: #87CEEB; }
+        #ui { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 18px; font-family: Arial, sans-serif; }
+        #gameOver { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); padding: 20px; color: white; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <div id="ui">Score: 0 - Level: 1 - Health: 3 - Rockets: 5 - Boomshell: 1</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameOver">Game Over! <button onclick="restartGame()">Restart</button></div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = Math.min(window.innerWidth, 800);
+        canvas.height = Math.min(window.innerHeight, 600);
+
+        let player = { x: canvas.width / 2, y: canvas.height - 60, speed: 5, health: 3, rockets: 5, boomshell: 1, score: 0, level: 1 };
+        let bullets = [], rockets = [], enemies = [];
+        let keys = {}; let gameOver = false;
+
+        document.addEventListener("keydown", e => keys[e.key] = true);
+        document.addEventListener("keyup", e => keys[e.key] = false);
+
+        function update() {
+            if (gameOver) return;
+            if (keys["ArrowLeft"]) player.x = Math.max(0, player.x - player.speed);
+            if (keys["ArrowRight"]) player.x = Math.min(canvas.width, player.x + player.speed);
+            if (keys[" "] && player.rockets > 0) { rockets.push({ x: player.x, y: player.y, speed: -8 }); player.rockets--; }
+            
+            bullets.push({ x: player.x, y: player.y, speed: -6 });
+            bullets.forEach((b, i) => b.y += b.speed);
+            rockets.forEach((r, i) => r.y += r.speed);
+
+            if (Math.random() < 0.02) {
+                let size = Math.random() < 0.8 ? { w: 40, h: 60, points: 10 } : { w: 60, h: 90, points: 50 };
+                enemies.push({ x: Math.random() * (canvas.width - size.w), y: 0, w: size.w, h: size.h, speed: 0.5 + player.level * 0.1, health: player.level * (size.w === 60 ? 2 : 1), points: size.points });
+            }
+            enemies.forEach((e, i) => { e.y += e.speed; if (e.y > canvas.height) enemies.splice(i, 1); });
+
+            bullets.forEach((b, bi) => {
+                enemies.forEach((e, ei) => {
+                    if (b.x > e.x && b.x < e.x + e.w && b.y > e.y && b.y < e.y + e.h) {
+                        e.health--; bullets.splice(bi, 1);
+                        if (e.health <= 0) { player.score += e.points; enemies.splice(ei, 1); }
+                    }
+                });
+            });
+
+            if (player.score >= 100 * player.level) player.level++;
+            if (player.health <= 0) { gameOver = true; document.getElementById("gameOver").style.display = "block"; }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#1E90FF";
+            ctx.fillRect(player.x - 20, player.y, 40, 50);
+            bullets.forEach(b => { ctx.fillStyle = "yellow"; ctx.fillRect(b.x, b.y, 5, 10); });
+            rockets.forEach(r => { ctx.fillStyle = "gold"; ctx.fillRect(r.x, r.y, 8, 15); });
+            enemies.forEach(e => { ctx.fillStyle = "red"; ctx.fillRect(e.x, e.y, e.w, e.h); });
+            document.getElementById("ui").textContent = `Score: ${player.score} - Level: ${player.level} - Health: ${player.health} - Rockets: ${player.rockets} - Boomshell: ${player.boomshell}`;
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        function restartGame() { location.reload(); }
+        gameLoop();
+    </script>
+</body>
+</html>
