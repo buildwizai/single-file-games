@@ -15,8 +15,7 @@ function App() {
     <div className="min-h-screen flex flex-col bg-gray-900">
       <Header />
       <main className="flex-grow container mx-auto max-w-6xl px-4 py-8">
-        {/* Moved share button above the page title and game list */}
-        <ShareButtons url={shareUrl} title={shareTitle} />
+
         <GamesList />
         <ContributeSection />
         {/* Removed GitHubStats; added GitHub repo link */}
@@ -31,6 +30,7 @@ function App() {
           </a>
         </div>
       </main>
+      <ShareButtons url={shareUrl} title={shareTitle} />
       <Footer />
     </div>
   )

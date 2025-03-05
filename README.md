@@ -5,77 +5,15 @@ A showcase of AI-generated, self-contained games written in a single HTML file. 
 ## 🌟 Features
 
 - Collection of single-file HTML games
-- Each game implemented by different AI models (GROK, ChatGPT, Gemini, etc.)
+- Each game can be implemented by different AI models (GROK, ChatGPT, Gemini, etc.)
 - Clean, modern UI built with React and Tailwind CSS
-- Real-time GitHub statistics
-- Easy-to-use prompt viewer
-- Mobile-responsive design
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/buildwizai/single-file-games.git
-cd single-file-games
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-4. Build for production:
-```bash
-npm run build
-```
-
-## 🎯 Project Structure
-
-```
-single-file-games/
-├── src/                    # Source files
-│   ├── components/         # React components
-│   ├── redux/             # Redux state management
-│   │   ├── sagas/         # Redux-Saga middleware
-│   │   └── slices/        # Redux Toolkit slices
-│   └── assets/            # Static assets
-├── games/                  # Game implementations
-│   └── sky-fight/         # Sky Fight game variants
-│       ├── grok3.html     # GROK implementation
-│       ├── chatgpt.html   # ChatGPT implementation
-│       ├── gemini2.0.html # Gemini implementation
-│       └── prompt.md      # Original game prompt
-└── public/                # Public assets
-```
 
 ## 🛠️ Built With
 
 - [React](https://reactjs.org/) - UI Framework
 - [Vite](https://vitejs.dev/) - Build tool and development server
-- [Redux Toolkit](https://redux-toolkit.js.org/) - State management
-- [Redux-Saga](https://redux-saga.js.org/) - Side effect management
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Font Awesome](https://fontawesome.com/) - Icons
-
-## 🎮 Games
-
-### Sky Fight
-A 3D aerial combat game where you control a fighter plane and battle enemies. Available in multiple implementations:
-- GROK 3
-- ChatGPT
-- Gemini 2.0
 
 ## 🤝 Contributing
 
