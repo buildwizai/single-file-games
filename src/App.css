@@ -70,3 +70,145 @@ body {
   transform: scale(0.9);
   transition: opacity 300ms, transform 300ms;
 }
+
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+}
+
+/* Retro styles - only used in games section */
+.retro-container {
+  background: #2a2a2a;
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 4px #1a1a1a;
+  image-rendering: pixelated;
+}
+
+.retro-text {
+  font-family: 'Press Start 2P', monospace;
+  text-shadow: 2px 2px #000;
+  letter-spacing: 1px;
+  line-height: 1.5;
+}
+
+.retro-grid {
+  display: grid;
+  gap: 2rem;
+  padding: 2rem;
+  background: repeating-linear-gradient(
+    0deg,
+    #1a1a1a,
+    #1a1a1a 2px,
+    #232323 2px,
+    #232323 4px
+  );
+}
+
+.retro-card {
+  background: #2a2a2a;
+  border: 4px solid #fff;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.retro-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 0 0 #fff;
+}
+
+.retro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  animation: scanning 1.5s linear infinite;
+}
+
+@keyframes scanning {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.pixel-border {
+  border-style: solid;
+  border-width: 4px;
+  border-image-slice: 2;
+  border-image-width: 2;
+  border-image-outset: 0;
+  border-image-source: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><path d='M0 2h6M2 0v6' stroke='white' fill='none'/></svg>");
+  border-image-repeat: space;
+  image-rendering: pixelated;
+}
+
+.retro-button {
+  background: #4a4a4a;
+  border: 3px solid #fff;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 2px 2px #000;
+}
+
+.retro-button:hover {
+  background: #6a6a6a;
+  transform: translateY(-2px);
+}
+
+.retro-button:active {
+  transform: translateY(2px);
+}
+
+/* Animation for loading states */
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-blink {
+  animation: blink 1s infinite;
+}
+
+/* Customized scrollbar for the retro theme */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border: 2px solid #fff;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border: 2px solid #fff;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6a6a6a;
+}
+
+/* Modern section styles */
+.modern-section {
+  background: linear-gradient(135deg, #f6f8fb 0%, #f0f4f8 100%);
+}
+
+/* Share buttons hover effects */
+.share-button {
+  transition: transform 0.2s ease;
+}
+
+.share-button:hover {
+  transform: translateY(-2px);
+}

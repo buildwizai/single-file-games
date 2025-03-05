@@ -5,14 +5,6 @@ import { games } from '../data/games';
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [promptModal, setPromptModal] = useState({
-    isOpen: false,
-    content: null,
-    title: '',
-    gameId: null,
-    isLoading: false
-  });
-
   const [githubStats, setGithubStats] = useState({
     loading: true,
     error: null,
@@ -30,33 +22,10 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const openPromptModal = useCallback(async ({ gameId, title }) => {
-    setPromptModal(prev => ({ ...prev, isOpen: true, gameId, title, isLoading: true }));
-    try {
-      const response = await fetch(`${import.meta.env.BASE_URL}games/${gameId}/prompt.md`);
-      if (!response.ok) throw new Error('Failed to load prompt');
-      const content = await response.text();
-      setPromptModal(prev => ({ ...prev, content, isLoading: false }));
-    } catch (error) {
-      setPromptModal(prev => ({
-        ...prev,
-        content: 'Failed to load prompt content.',
-        isLoading: false
-      }));
-    }
-  }, []);
-
-  const closePromptModal = useCallback(() => {
-    setPromptModal(prev => ({ ...prev, isOpen: false }));
-  }, []);
-
   const value = {
     games,
-    promptModal,
     githubStats,
     actions: {
-      openPromptModal,
-      closePromptModal,
       fetchGithubStats
     }
   };

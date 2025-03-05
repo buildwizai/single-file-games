@@ -6,82 +6,73 @@ const GitHubStats = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+      <div className="retro-container p-8 text-center">
+        <div className="animate-pulse retro-text text-white">LOADING...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-600 p-4">
-        <i className="fas fa-exclamation-circle mr-2"></i>
-        Failed to load GitHub stats
+      <div className="retro-container p-4 text-center">
+        <div className="retro-text text-red-500">
+          <i className="fas fa-exclamation-circle mr-2"></i>
+          ERROR LOADING STATS
+        </div>
       </div>
     );
   }
 
+  const statItems = [
+    {
+      label: 'STARS',
+      value: stats?.stargazers_count || 0,
+      icon: 'fa-star',
+      color: 'text-yellow-500',
+      link: 'stargazers'
+    },
+    {
+      label: 'FORKS',
+      value: stats?.forks_count || 0,
+      icon: 'fa-code-branch',
+      color: 'text-blue-500',
+      link: 'network/members'
+    },
+    {
+      label: 'WATCHERS',
+      value: stats?.subscribers_count || 0,
+      icon: 'fa-eye',
+      color: 'text-green-500',
+      link: 'watchers'
+    },
+    {
+      label: 'ISSUES',
+      value: stats?.open_issues_count || 0,
+      icon: 'fa-exclamation-circle',
+      color: 'text-purple-500',
+      link: 'issues'
+    }
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      <a
-        href="https://github.com/buildwizai/single-file-games/stargazers"
-        target="_blank"
-        rel="noreferrer"
-        className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-center gap-3">
-          <i className="fas fa-star text-yellow-500 text-xl"></i>
-          <div>
-            <div className="text-sm text-gray-600">Stars</div>
-            <div className="font-bold text-gray-800">{stats?.stargazers_count || 0}</div>
+      {statItems.map((item) => (
+        <a
+          key={item.label}
+          href={`https://github.com/buildwizai/single-file-games/${item.link}`}
+          target="_blank"
+          rel="noreferrer"
+          className="retro-card p-4"
+        >
+          <div className="flex items-center justify-center gap-3">
+            <i className={`fas ${item.icon} ${item.color} text-xl`}></i>
+            <div>
+              <div className="text-sm retro-text text-gray-400">{item.label}</div>
+              <div className="retro-text text-white">{item.value}</div>
+            </div>
           </div>
-        </div>
-      </a>
-
-      <a
-        href="https://github.com/buildwizai/single-file-games/network/members"
-        target="_blank"
-        rel="noreferrer"
-        className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-center gap-3">
-          <i className="fas fa-code-branch text-indigo-500 text-xl"></i>
-          <div>
-            <div className="text-sm text-gray-600">Forks</div>
-            <div className="font-bold text-gray-800">{stats?.forks_count || 0}</div>
-          </div>
-        </div>
-      </a>
-
-      <a
-        href="https://github.com/buildwizai/single-file-games/watchers"
-        target="_blank"
-        rel="noreferrer"
-        className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-center gap-3">
-          <i className="fas fa-eye text-green-500 text-xl"></i>
-          <div>
-            <div className="text-sm text-gray-600">Watchers</div>
-            <div className="font-bold text-gray-800">{stats?.subscribers_count || 0}</div>
-          </div>
-        </div>
-      </a>
-
-      <a
-        href="https://github.com/buildwizai/single-file-games/issues"
-        target="_blank"
-        rel="noreferrer"
-        className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow"
-      >
-        <div className="flex items-center gap-3">
-          <i className="fas fa-exclamation-circle text-purple-500 text-xl"></i>
-          <div>
-            <div className="text-sm text-gray-600">Open Issues</div>
-            <div className="font-bold text-gray-800">{stats?.open_issues_count || 0}</div>
-          </div>
-        </div>
-      </a>
+        </a>
+      ))}
     </div>
   );
 };

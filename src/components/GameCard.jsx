@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import ShareButtons from './ShareButtons';
 
 // Model-specific styling info
 const modelStyles = {
@@ -35,36 +36,28 @@ const getModelStyle = (modelName) => {
   return modelStyles.default;
 };
 
-const GameCard = ({ game, onViewPrompt }) => {
+const GameCard = ({ game }) => {
   const modelStyle = getModelStyle(game.model);
-  const baseUrl = import.meta.env.BASE_URL;
-  
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg">
-      <div className={`h-40 bg-gradient-to-r ${modelStyle.colorClass} flex items-center justify-center text-white`}>
-        <div className="text-center">
-          <i className={`fas ${modelStyle.icon} text-5xl mb-2`}></i>
-          <h4 className="text-lg font-semibold">{game.model}</h4>
-        </div>
+    <div className="retro-card text-white p-4">
+      <div className={`mb-4 text-center`}>
+        <i className={`fas ${modelStyle.icon} text-4xl mb-2`}></i>
+        <h4 className="retro-text text-sm">{game.model}</h4>
       </div>
-      <div className="p-5">
-        <h3 className="text-xl font-bold text-indigo-700 mb-2">{game.title}</h3>
-        <p className="text-gray-600 mb-4">{game.description}</p>
-        <div className="flex flex-wrap gap-2">
-          <a 
-            href={`${baseUrl}${game.path}/${game.file}`}
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <i className="fas fa-play"></i> Play
-          </a>
-          <button 
-            onClick={() => onViewPrompt(game.gameId, game.title)}
-            className="inline-flex items-center gap-2 bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            <i className="fas fa-code"></i> View Prompt
-          </button>
+      <div className="p-4">
+        <h3 className="retro-text text-lg mb-4">{game.title}</h3>
+        <p className="text-gray-400 mb-6 text-sm">{game.description}</p>
+        <a 
+          href={`${game.path}/${game.file}`}
+          className="retro-button block w-full text-center text-sm mb-4"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i className="fas fa-play mr-2"></i> PLAY
+        </a>
+        <div className="flex justify-center">
+          <ShareButtons title={game.title} description={`Check out ${game.title} - ${game.description}`} />
         </div>
       </div>
     </div>
@@ -74,14 +67,12 @@ const GameCard = ({ game, onViewPrompt }) => {
 GameCard.propTypes = {
   game: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    gameId: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
     path: PropTypes.string.isRequired,
     file: PropTypes.string.isRequired,
     model: PropTypes.string.isRequired,
   }).isRequired,
-  onViewPrompt: PropTypes.func.isRequired,
 };
 
 export default GameCard;
