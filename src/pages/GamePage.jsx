@@ -2,6 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { games } from '../data/gamesLoader.js';
 import '../styles/GamePage.css';
+import PropTypes from 'prop-types';
+
+// Extract RelatedGame to a separate component for better organization
+const RelatedGame = ({ game }) => (
+  <Link
+    to={`/game/${game.id}`}
+    className="related-game"
+    key={game.id}
+  >
+    <img src={game.image} alt={game.title} />
+    <h3>{game.title}</h3>
+    <span className="model">{game.model}</span>
+  </Link>
+);
+
+RelatedGame.propTypes = {
+  game: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    model: PropTypes.string.isRequired
+  }).isRequired
+};
 
 function GamePage() {
   const { gameId } = useParams();
@@ -31,12 +54,12 @@ function GamePage() {
   }, [gameId]);
 
   if (loading) {
-    return <div className="loading">Loading game details...</div>;
+    return <div className="loading" role="status" aria-live="polite">Loading game details...</div>;
   }
 
   if (error || !game) {
     return (
-      <div className="error-container">
+      <div className="error-container" role="alert">
         <h2>Error</h2>
         <p>{error || 'Game not found'}</p>
         <Link to="/" className="back-button">Back to Games</Link>
@@ -88,15 +111,7 @@ function GamePage() {
           <h2>More {game.category} Games</h2>
           <div className="related-grid">
             {relatedGames.map(relatedGame => (
-              <Link
-                to={`/game/${relatedGame.id}`}
-                className="related-game"
-                key={relatedGame.id}
-              >
-                <img src={relatedGame.image} alt={relatedGame.title} />
-                <h3>{relatedGame.title}</h3>
-                <span className="model">{relatedGame.model}</span>
-              </Link>
+              <RelatedGame game={relatedGame} key={relatedGame.id} />
             ))}
           </div>
         </div>

@@ -1,7 +1,6 @@
 import Header from './components/Header'
 import GamesList from './components/GamesList'
 import ContributeSection from './components/ContributeSection'
-// Removed GitHubStats import
 import Footer from './components/Footer'
 import './App.css'
 import ShareButtons from './components/ShareButtons'

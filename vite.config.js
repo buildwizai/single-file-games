@@ -1,18 +1,22 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// GitHub Pages deployment configuration
-const base = '/'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: base,
   server: {
     port: 3000,
-    open: true,
+    open: true
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    assetsDir: 'assets',
+  },
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
+  },
+  esbuild: {
+    loader: 'jsx',
+    include: /src\/.*\.[tj]sx?$/,
+    exclude: []
   }
-})
+});

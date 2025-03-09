@@ -26,7 +26,7 @@ const modelStyles = {
 };
 
 const getModelStyle = (modelName) => {
-  const normalizedName = modelName.toLowerCase();
+  const normalizedName = modelName?.toLowerCase() || '';
   for (const key of Object.keys(modelStyles)) {
     if (normalizedName.includes(key)) {
       return modelStyles[key];
@@ -37,32 +37,30 @@ const getModelStyle = (modelName) => {
 
 const GameCard = ({ game }) => {
   const modelStyle = getModelStyle(game.model);
+  const gamePath = game.publicPath || game.path || '#';
 
   return (
-    <div className="game-card flex flex-col p-4 border rounded shadow">
+    <article className="game-card flex flex-col p-4 border rounded shadow">
       <div className="mb-4 text-center">
-        <i className={`fas ${modelStyle.icon} text-4xl mb-2`}></i>
-        {/* Display model as a tag */}
+        <i className={`fas ${modelStyle.icon} text-4xl mb-2`} aria-hidden="true"></i>
         <span className="inline-block bg-gray-800 px-2 py-1 rounded text-xs">
           {game.model}
         </span>
       </div>
       <div className="game-details p-4">
         <h3 className="retro-text text-lg mb-4">{game.title}</h3>
-        {/* Removed description */}
-
       </div>
 
-      {/* The Play button with mt-auto to push it to the bottom */}
       <a
-          href={game.publicPath}
-          className="retro-button mt-auto block w-full text-center text-sm mb-4 py-2 px-4 rounded"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <i className="fas fa-play mr-2"></i> PLAY
-        </a>
-    </div>
+        href={gamePath}
+        className="retro-button mt-auto block w-full text-center text-sm mb-4 py-2 px-4 rounded"
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`Play ${game.title}`}
+      >
+        <i className="fas fa-play mr-2" aria-hidden="true"></i> PLAY
+      </a>
+    </article>
   );
 };
 
@@ -70,8 +68,7 @@ GameCard.propTypes = {
   game: PropTypes.shape({
     id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    // description removed
-    path: PropTypes.string.isRequired,
+    path: PropTypes.string,
     publicPath: PropTypes.string,
     model: PropTypes.string.isRequired,
   }).isRequired,
