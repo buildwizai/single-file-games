@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node -e \"const fs=require('fs');const path=require('path');if(fs.existsSync('dist/games'))fs.rmSync('dist/games',{recursive:true});fs.cpSync('games','dist/games',{recursive:true});\"",
-    "build": "vite build",
+    "build": "vite build && cp dist/index.html dist/404.html",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "update-games": "node scripts/update-games-list.js"
